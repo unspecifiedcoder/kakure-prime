@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchPreStocks, fetchPythAaplStatus, navPremium, type PreStock, type PythMarketStatus } from "../lib/sponsorData.js";
 
+const METEORA_DBC_POOL = "58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW";
+const METEORA_EXPLORER_URL = `https://explorer.solana.com/address/${METEORA_DBC_POOL}?cluster=devnet`;
+
 const STEPS = [
   {
     eyebrow: "PORTFOLIO READY",
@@ -90,7 +93,13 @@ export function DemoPage(): JSX.Element {
             <div className="sponsor-signals">
               <span><b>PreStocks</b> {selected ? `live · ${navPremium(selected).toFixed(1)}% vs mark` : "connecting"}</span>
               <span><b>Pyth</b> {pyth ? `${pyth.symbol} · ${pyth.isOpen ? "24/7 feed live" : "closed"}` : "verifying feed"}</span>
-              <span><b>Meteora DBC</b> equity-receipt curve · 30 bps → 5 bps</span>
+              <span>
+                <b>Meteora DBC</b>{" "}
+                <a href={METEORA_EXPLORER_URL} target="_blank" rel="noreferrer" title={METEORA_DBC_POOL}>
+                  devnet pool 58Hx…TbcW
+                </a>{" "}
+                · 100 → 25 bps
+              </span>
             </div>
           </div>
           <span className="demo-label">{current.eyebrow}</span>
@@ -105,7 +114,7 @@ export function DemoPage(): JSX.Element {
           </dl>
 
           <button className="primary big demo-action" type="button" onClick={advance}>
-            {current.action} <span aria-hidden="true">→</span>
+            {current.action.replaceAll("AAPLx", asset)} <span aria-hidden="true">→</span>
           </button>
           {isFinal && <p className="demo-success">Proof verified · settlement final · recipient claim ready</p>}
         </div>

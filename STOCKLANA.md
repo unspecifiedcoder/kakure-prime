@@ -39,18 +39,23 @@ On-chain observers see commitments, nullifiers, and valid Groth16 proofs. Author
 - Live issuer quote data and verified Solana xStock mint presets in the application.
 - Live PreStocks catalog, mint addresses, mark prices, and token prices from the official API; the demo can shield only official PreStocks assets in its private-market mode.
 - Pyth's canonical `Crypto.AAPLX/USD` feed discovery and live market-status signal, surfaced in the settlement workflow.
-- A stock-aware Meteora DBC receipt design: fees decay from 30 bps to 5 bps as price discovery stabilizes before DAMM v2 graduation.
+- A stock-aware Meteora DBC receipt: fees decay from 100 bps to the protocol minimum of 25 bps over 24 hours before DAMM v2 graduation.
 
 ## Sponsor track scope
 
 - **PreStocks:** official API assets are selectable in the working judge demo; the displayed premium/discount is computed from live PreStocks mark and token prices. No competing pre-IPO token is integrated.
 - **Pyth Network:** Kakure discovers the canonical AAPLx Pyth feed and uses its live market schedule as a risk signal beside private settlement. A production deployment routes authenticated Pyth Pro prices through a server-side token broker; no API secret is shipped to the browser.
-- **Meteora DBC:** the product applies a decreasing-fee DBC to a transferable shielded-equity receipt, using a high early price-discovery fee (30 bps), a mature 5 bps fee, and DAMM v2 graduation. On-chain config creation is intentionally devnet-only until the hackathon build receives review.
+- **Meteora DBC:** the product applies a decreasing-fee DBC to a transferable shielded-equity receipt, using a 100 bps early price-discovery fee, a mature 25 bps fee, and DAMM v2 graduation. The reproducible deployment is `scripts/deploy-meteora-dbc.mjs` and is devnet-only.
 
 ## Devnet deployment
 
 - Kakure pool: `HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF`
 - Demo verifier: `37K2Nhpuh2r3xv6gZ9yfA8gPpEpvDXfLkgkK3YmdWVHT`
+- Meteora DBC config: `8wqCNyoxQMUGRJwXngG2wxVLzqduTazi2nDjcuoCqbFT`
+- Meteora DBC pool: `58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW`
+- Shielded-equity receipt mint: `Eqi8f5wf2fDWKriZUGC8qRS9ueYwhf37LDpZupaSbfJ8`
+- DBC config transaction: `2f12VxbqsTogybhARtUddxmVdKstxFu67QJHNvqr5QLS97Qcc6FEqofvPsV8cFa7wThUuN2qegDVeRAe6LPbMFkE`
+- DBC pool transaction: `4dLKSKqFAwAemaXXwAveqmiWVLiKDdbW8K1pZ8w3beYQSHFasqH2FTgkwSrmxvEqRmbfyFBnhWigF9cADTfmt8mY`
 - Network: Solana devnet
 
 The verifier above is the repository's explicitly labelled test verifier, used only to exercise the

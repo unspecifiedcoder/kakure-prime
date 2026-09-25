@@ -1,0 +1,11 @@
+{
+  "name": "Kakure Shielded Equity Receipt",
+  "symbol": "kEQT",
+  "description": "A devnet-only Meteora DBC receipt representing liquidity around Kakure Prime shielded tokenized-equity positions. Not a security, investment product, or claim on real assets.",
+  "external_url": "https://kakure-prime.vercel.app/#/demo",
+  "attributes": [
+    { "trait_type": "Network", "value": "Solana Devnet" },
+    { "trait_type": "Curve", "value": "Meteora DBC" },
+    { "trait_type": "Graduation", "value": "DAMM v2" }
+  ]
+}
