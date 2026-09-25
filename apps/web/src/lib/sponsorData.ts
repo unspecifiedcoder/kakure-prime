@@ -28,7 +28,7 @@ interface PythFeedRow {
   attributes?: { symbol?: unknown };
 }
 
-export const PRESTOCKS_API = "https://prestocks.com/api/prestocks";
+export const PRESTOCKS_API = "/api/prestocks";
 export const PYTH_FEEDS_API = "https://hermes.pyth.network/v2/price_feeds?query=AAPL";
 
 export async function fetchPreStocks(signal?: AbortSignal): Promise<PreStock[]> {
