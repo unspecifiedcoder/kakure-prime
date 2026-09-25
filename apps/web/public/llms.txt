@@ -1,0 +1,30 @@
+# Kakure Prime
+
+> Kakure Prime is a confidential treasury and settlement layer for tokenized equities on Solana.
+
+Kakure Prime lets funds, DAOs, family offices, and companies hold and move Token-2022 equities without publicly revealing portfolio amounts, recipients, or signer activity. Solana programs verify Groth16 zero-knowledge proofs while dealerless FROST threshold custody prevents any single signer from moving assets alone.
+
+## Core capabilities
+
+- Shield AAPLx, TSLAx, NVDAx, SPYx, and other supported SPL or Token-2022 assets.
+- Require configurable threshold approval for private portfolio movements.
+- Settle with commitments and nullifiers verified by an on-chain Solana program.
+- Give recipients private claim links for wallet withdrawal.
+- Enable selective audit access through a separate threshold compliance committee.
+
+## Technical architecture
+
+- Seven Noir circuits compiled to Groth16.
+- Native Solana pool program with verifier CPIs, commitment tree, nullifiers, and asset vaults.
+- Dealerless FROST DKG and threshold signing.
+- SDK, CLI, indexer, encrypted coordinator, local prover, WASM prover, and React web application.
+
+## Status
+
+Kakure Prime is an unaudited pre-release localnet/devnet demonstration. It uses development Groth16 setup parameters and must not hold real funds or securities.
+
+## Primary links
+
+- Web application: https://kakure-prime.vercel.app/
+- Source code: https://github.com/unspecifiedcoder/kakure-prime
+- Security information: https://kakure-prime.vercel.app/security
