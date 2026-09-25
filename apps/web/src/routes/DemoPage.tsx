@@ -104,7 +104,7 @@ export function DemoPage(): JSX.Element {
           </div>
           <span className="demo-label">{current.eyebrow}</span>
           <h2>{current.title.replaceAll("AAPLx", asset)}</h2>
-          <p>{current.detail}</p>
+          <p>{current.detail.replaceAll("AAPLx", asset)}</p>
 
           <dl className="demo-ledger">
             <div><dt>Portfolio</dt><dd>Frontier Equity Fund</dd></div>
