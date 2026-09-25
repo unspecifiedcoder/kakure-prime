@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAppStore } from "../store/appStore.js";
 import { connectPhantom, deriveAccount } from "../lib/wallet.js";
 import { createOrJoinTreasury, decodeInvite, encodeInvite } from "../lib/treasury.js";
@@ -111,6 +111,9 @@ export function Home(): JSX.Element {
           <span><b>04</b> Committee audit</span>
         </div>
         <section aria-label="Wallet" className="actions">
+          <Link className="btn primary big demo-cta" to="/demo">
+            Launch 60-second judge demo
+          </Link>
           {connected ? (
             <p>
               Connected: <span className="chip">{shortAddress(walletPublicKey!.toBase58())}</span>

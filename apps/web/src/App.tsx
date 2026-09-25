@@ -4,6 +4,7 @@ import { TreasuryPage } from "./routes/TreasuryPage.js";
 import { ClaimPage } from "./routes/ClaimPage.js";
 import { AuditPage } from "./routes/AuditPage.js";
 import { SecurityPage } from "./routes/SecurityPage.js";
+import { DemoPage } from "./routes/DemoPage.js";
 import { useAppStore } from "./store/appStore.js";
 import { shortAddress } from "./ui/format.js";
 
@@ -30,6 +31,7 @@ function TopBar(): JSX.Element {
           Portfolios
         </NavLink>
         <NavLink to="/audit">Audit room</NavLink>
+        <NavLink to="/demo">Judge demo</NavLink>
         <NavLink to="/security">Security</NavLink>
       </nav>
       <span className="spacer" />
@@ -55,6 +57,7 @@ export function App(): JSX.Element {
             <Route path="/treasury/:id" element={<TreasuryPage />} />
             <Route path="/claim/:token" element={<ClaimPage />} />
             <Route path="/audit" element={<AuditPage />} />
+            <Route path="/demo" element={<DemoPage />} />
             <Route path="/security" element={<SecurityPage />} />
           </Routes>
         </div>
