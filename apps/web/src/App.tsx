@@ -1,12 +1,14 @@
+import { lazy, Suspense } from "react";
 import { HashRouter, Routes, Route, NavLink, Link } from "react-router-dom";
-import { Home } from "./routes/Home.js";
-import { TreasuryPage } from "./routes/TreasuryPage.js";
-import { ClaimPage } from "./routes/ClaimPage.js";
-import { AuditPage } from "./routes/AuditPage.js";
-import { SecurityPage } from "./routes/SecurityPage.js";
-import { DemoPage } from "./routes/DemoPage.js";
 import { useAppStore } from "./store/appStore.js";
 import { shortAddress } from "./ui/format.js";
+
+const Home = lazy(() => import("./routes/Home.js").then((module) => ({ default: module.Home })));
+const TreasuryPage = lazy(() => import("./routes/TreasuryPage.js").then((module) => ({ default: module.TreasuryPage })));
+const ClaimPage = lazy(() => import("./routes/ClaimPage.js").then((module) => ({ default: module.ClaimPage })));
+const AuditPage = lazy(() => import("./routes/AuditPage.js").then((module) => ({ default: module.AuditPage })));
+const SecurityPage = lazy(() => import("./routes/SecurityPage.js").then((module) => ({ default: module.SecurityPage })));
+const DemoPage = lazy(() => import("./routes/DemoPage.js").then((module) => ({ default: module.DemoPage })));
 
 /** Which cluster the app is pointed at, read off the RPC URL. A finance lead must never mistake a
  *  devnet demo for real money, so this is always on screen. */
@@ -52,14 +54,16 @@ export function App(): JSX.Element {
       <div className="shell">
         <TopBar />
         <div className="content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/treasury/:id" element={<TreasuryPage />} />
-            <Route path="/claim/:token" element={<ClaimPage />} />
-            <Route path="/audit" element={<AuditPage />} />
-            <Route path="/demo" element={<DemoPage />} />
-            <Route path="/security" element={<SecurityPage />} />
-          </Routes>
+          <Suspense fallback={<p role="status">Loading private-market workspace…</p>}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/treasury/:id" element={<TreasuryPage />} />
+              <Route path="/claim/:token" element={<ClaimPage />} />
+              <Route path="/audit" element={<AuditPage />} />
+              <Route path="/demo" element={<DemoPage />} />
+              <Route path="/security" element={<SecurityPage />} />
+            </Routes>
+          </Suspense>
         </div>
         <footer className="footer">
           <span>Kakure Prime — confidential equity infrastructure on Solana</span>

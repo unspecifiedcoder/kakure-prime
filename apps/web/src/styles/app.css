@@ -241,6 +241,7 @@ summary { cursor: pointer; color: var(--ink-2); font-weight: 600; }
 .integration-evidence article > div span { color: var(--ink-3); }
 .integration-evidence article > div b { color: var(--amber); }
 .integration-evidence article[data-state="pass"] > div b { color: var(--teal); }
+.integration-evidence article[data-state="block"] > div b { color: var(--red); }
 .integration-evidence article h2 { font-size: 1rem; }
 .integration-evidence article p { min-height: 3.1rem; margin-bottom: .7rem; font-size: .8rem; }
 .integration-evidence article a { display: block; overflow: hidden; color: var(--teal); font: 650 .72rem/1.4 var(--mono); text-overflow: ellipsis; white-space: nowrap; }

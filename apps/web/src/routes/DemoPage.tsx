@@ -102,8 +102,8 @@ export function DemoPage(): JSX.Element {
       </header>
 
       <section className="integration-evidence" aria-label="Live sponsor integration evidence">
-        <article data-state={preStocksGate?.passed ? "pass" : "loading"}>
-          <div><span>01 · PRESTOCKS</span><b>{preStocksGate?.passed ? "POLICY PASS" : "VERIFYING"}</b></div>
+        <article data-state={preStocksGate ? preStocksGate.passed ? "pass" : "block" : "loading"}>
+          <div><span>01 · PRESTOCKS</span><b>{preStocksGate ? preStocksGate.passed ? "POLICY PASS" : "POLICY BLOCK" : "VERIFYING"}</b></div>
           <h2>Official-only private equity rail</h2>
           <p>{selected ? `${selected.name} is API-allowlisted, ${selected.onChainVerified ? "Token-2022 verified" : "unverified"}; ${navPremium(selected).toFixed(1)}% token-to-mark spread.` : "Loading the official PreStocks catalog…"}</p>
           {selected && <a href={`https://solscan.io/token/${selected.contractAddress}`} target="_blank" rel="noreferrer">Official mint {shorten(selected.contractAddress)} ↗</a>}
