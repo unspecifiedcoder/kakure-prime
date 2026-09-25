@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   fetchMeteoraEvidence,
+  fetchProtocolEvidence,
   fetchPreStocks,
   fetchPythAaplStatus,
   navPremium,
@@ -10,6 +11,7 @@ import {
   type MeteoraEvidence,
   type PreStock,
   type PythMarketStatus,
+  type ProtocolEvidence,
 } from "../lib/sponsorData.js";
 
 const METEORA_DBC_POOL = "58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW";
@@ -57,6 +59,7 @@ export function DemoPage(): JSX.Element {
   const [selectedSymbol, setSelectedSymbol] = useState("ANTHROPIC");
   const [pyth, setPyth] = useState<PythMarketStatus | null>(null);
   const [meteora, setMeteora] = useState<MeteoraEvidence | null>(null);
+  const [protocol, setProtocol] = useState<ProtocolEvidence | null>(null);
   const current = STEPS[step]!;
   const isFinal = step === STEPS.length - 1;
   const selected = useMemo(() => preStocks.find((stock) => stock.symbol === selectedSymbol), [preStocks, selectedSymbol]);
@@ -72,6 +75,7 @@ export function DemoPage(): JSX.Element {
     void fetchPreStocks(controller.signal).then(setPreStocks).catch(() => undefined);
     void fetchPythAaplStatus(controller.signal).then(setPyth).catch(() => undefined);
     void fetchMeteoraEvidence(controller.signal).then(setMeteora).catch(() => undefined);
+    void fetchProtocolEvidence(controller.signal).then(setProtocol).catch(() => undefined);
     return () => controller.abort();
   }, []);
 
@@ -101,7 +105,7 @@ export function DemoPage(): JSX.Element {
         </div>
       </header>
 
-      <section className="integration-evidence" aria-label="Live sponsor integration evidence">
+      <section className="integration-evidence" aria-label="Live integration and protocol evidence">
         <article data-state={preStocksGate ? preStocksGate.passed ? "pass" : "block" : "loading"}>
           <div><span>01 · PRESTOCKS</span><b>{preStocksGate ? preStocksGate.passed ? "POLICY PASS" : "POLICY BLOCK" : "VERIFYING"}</b></div>
           <h2>Official-only private equity rail</h2>
@@ -119,6 +123,12 @@ export function DemoPage(): JSX.Element {
           <h2>Traded equity-receipt curve</h2>
           <p>{meteora ? `${(meteora.curveProgress * 100).toFixed(3)}% curve progress · ${(meteora.quoteReserveLamports / 1e9).toFixed(4)} SOL reserve · ${meteora.graduation}` : "Checking pool ownership and transaction finality…"}</p>
           {meteora && <a href={transactionUrl(meteora.tradeSignature)} target="_blank" rel="noreferrer">Finalized devnet trade {shorten(meteora.tradeSignature)} ↗</a>}
+        </article>
+        <article data-state={protocol?.verified ? "pass" : "loading"}>
+          <div><span>04 · KAKURE PROTOCOL</span><b>{protocol?.verified ? "DEPLOYED" : "VERIFYING"}</b></div>
+          <h2>Executable Solana programs</h2>
+          <p>{protocol ? `Pool + test verifier verified executable on devnet. Real local E2E uses ${protocol.productionVerifierCount} Groth16 verifier programs.` : "Checking program ownership and executable state…"}</p>
+          {protocol && <a href={`https://explorer.solana.com/address/${protocol.poolProgram}?cluster=devnet`} target="_blank" rel="noreferrer">Pool program {shorten(protocol.poolProgram)} ↗</a>}
         </article>
       </section>
 
@@ -210,8 +220,8 @@ export function DemoPage(): JSX.Element {
       </section>
 
       <p className="demo-footnote">
-        The guided data above is simulated for judge accessibility. The repository includes the real circuits, Solana program,
-        SDK, services, and local-validator end-to-end flow. <Link to="/security">Read the security model</Link>.
+        Sponsor and deployment evidence is live. Only the five settlement clicks are simulated for judge accessibility. The
+        devnet verifier is test-only; the repository's reproducible local flow uses all seven real Groth16 verifiers. <Link to="/security">Read the security model</Link>.
       </p>
     </main>
   );

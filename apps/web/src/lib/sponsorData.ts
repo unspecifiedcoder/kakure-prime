@@ -35,6 +35,17 @@ export interface MeteoraEvidence {
   readonly finalized: boolean;
 }
 
+export interface ProtocolEvidence {
+  readonly network: "devnet";
+  readonly poolProgram: string;
+  readonly demoVerifier: string;
+  readonly verifierMode: "test-only";
+  readonly productionVerifierCount: number;
+  readonly localE2eCommand: string;
+  readonly verified: boolean;
+  readonly programs: readonly { readonly executable: boolean; readonly owner: string | null }[];
+}
+
 interface PreStocksApiRow {
   name?: unknown;
   symbol?: unknown;
@@ -48,6 +59,7 @@ interface PreStocksApiRow {
 export const PRESTOCKS_API = "/api/prestocks";
 export const PYTH_FEEDS_API = "/api/pyth";
 export const METEORA_EVIDENCE_API = "/api/meteora";
+export const PROTOCOL_EVIDENCE_API = "/api/protocol";
 
 export async function fetchPreStocks(signal?: AbortSignal): Promise<PreStock[]> {
   const response = await fetch(PRESTOCKS_API, signal ? { signal } : undefined);
@@ -93,6 +105,16 @@ export async function fetchMeteoraEvidence(signal?: AbortSignal): Promise<Meteor
     throw new Error("Meteora evidence was malformed");
   }
   return row as MeteoraEvidence;
+}
+
+export async function fetchProtocolEvidence(signal?: AbortSignal): Promise<ProtocolEvidence> {
+  const response = await fetch(PROTOCOL_EVIDENCE_API, signal ? { signal } : undefined);
+  if (!response.ok) throw new Error(`Protocol evidence API returned ${response.status}`);
+  const row = (await response.json()) as Partial<ProtocolEvidence>;
+  if (typeof row.poolProgram !== "string" || row.verifierMode !== "test-only" || typeof row.verified !== "boolean") {
+    throw new Error("Protocol evidence was malformed");
+  }
+  return row as ProtocolEvidence;
 }
 
 export function navPremium(stock: Pick<PreStock, "markPrice" | "tokenPrice">): number {

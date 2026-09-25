@@ -235,7 +235,7 @@ summary { cursor: pointer; color: var(--ink-2); font-weight: 600; }
 .demo-proof-stack { display: flex; flex-wrap: wrap; justify-content: center; gap: .65rem 1rem; padding: 1.25rem; background: #101613; color: #e5eee8; font: 650 .78rem/1 var(--mono); }
 .demo-proof-stack b { color: #65d399; }
 .demo-footnote { max-width: 74rem; margin: 0 auto; text-align: center; font-size: .86rem; }
-.integration-evidence { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; padding: 1px; background: var(--rule); border: 1px solid var(--rule); }
+.integration-evidence { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; padding: 1px; background: var(--rule); border: 1px solid var(--rule); }
 .integration-evidence article { min-width: 0; padding: 1.15rem; background: var(--surface); }
 .integration-evidence article > div { display: flex; justify-content: space-between; gap: .75rem; margin-bottom: .8rem; font: 700 .66rem/1.2 var(--mono); letter-spacing: .08em; }
 .integration-evidence article > div span { color: var(--ink-3); }
