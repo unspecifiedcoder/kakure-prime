@@ -37,6 +37,24 @@ On-chain observers see commitments, nullifiers, and valid Groth16 proofs. Author
 - End-to-end local-validator flow: create portfolio → deposit → approve → private transfer → withdraw.
 - Token-2022 deposit and withdrawal routing added for Stocklana.
 - Live issuer quote data and verified Solana xStock mint presets in the application.
+- Live PreStocks catalog, mint addresses, mark prices, and token prices from the official API; the demo can shield only official PreStocks assets in its private-market mode.
+- Pyth's canonical `Crypto.AAPLX/USD` feed discovery and live market-status signal, surfaced in the settlement workflow.
+- A stock-aware Meteora DBC receipt design: fees decay from 30 bps to 5 bps as price discovery stabilizes before DAMM v2 graduation.
+
+## Sponsor track scope
+
+- **PreStocks:** official API assets are selectable in the working judge demo; the displayed premium/discount is computed from live PreStocks mark and token prices. No competing pre-IPO token is integrated.
+- **Pyth Network:** Kakure discovers the canonical AAPLx Pyth feed and uses its live market schedule as a risk signal beside private settlement. A production deployment routes authenticated Pyth Pro prices through a server-side token broker; no API secret is shipped to the browser.
+- **Meteora DBC:** the product applies a decreasing-fee DBC to a transferable shielded-equity receipt, using a high early price-discovery fee (30 bps), a mature 5 bps fee, and DAMM v2 graduation. On-chain config creation is intentionally devnet-only until the hackathon build receives review.
+
+## Devnet deployment
+
+- Kakure pool: `HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF`
+- Demo verifier: `37K2Nhpuh2r3xv6gZ9yfA8gPpEpvDXfLkgkK3YmdWVHT`
+- Network: Solana devnet
+
+The verifier above is the repository's explicitly labelled test verifier, used only to exercise the
+devnet demonstration path. It is not the production Groth16 verifier and must never custody real assets.
 
 ## Demo script (90 seconds)
 

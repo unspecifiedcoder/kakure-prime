@@ -241,3 +241,35 @@ summary { cursor: pointer; color: var(--ink-2); font-weight: 600; }
   .demo-timeline { grid-template-columns: 1fr; }
   .demo-timeline li { border-right: 0; border-bottom: 1px solid var(--rule); }
 }
+.sponsor-controls {
+  display: grid;
+  gap: .65rem;
+  margin-bottom: 1.6rem;
+  padding: 1rem;
+  border: 1px solid rgba(153, 255, 206, .25);
+  background: rgba(8, 27, 22, .58);
+}
+
+.sponsor-controls label {
+  color: var(--muted);
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.sponsor-controls select { width: 100%; }
+
+.sponsor-signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.sponsor-signals span {
+  padding: .38rem .55rem;
+  border: 1px solid rgba(255, 255, 255, .12);
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.sponsor-signals b { color: var(--text); }

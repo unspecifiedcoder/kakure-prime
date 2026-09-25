@@ -119,7 +119,7 @@ Before any mainnet use: external audit, a multi-party trusted-setup ceremony, an
 - [x] SDK, prover, indexer, coordinator, CLI
 - [x] Localnet end-to-end scenario with real proofs
 - [x] Web app: treasury, batch payouts, claim links, audit view; WASM prover
-- [ ] Devnet deployment and hosted demo
+- [x] Devnet program deployment and hosted judge demo (program addresses in `STOCKLANA.md`)
 - [ ] Multithreaded browser prover (Rust/WASM threads)
 - [ ] Trusted-setup ceremony; external audit
 - [ ] Payroll scheduling, multi-asset batches, accountant exports
