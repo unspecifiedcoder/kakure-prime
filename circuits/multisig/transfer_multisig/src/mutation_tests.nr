@@ -1,0 +1,876 @@
+//! Mutation harness: prove the FROST KAT, mutate one witness/signed field, assert the specific rejection.
+
+use shared::mutation;
+use shared::note::Note;
+use shared::open_multisig_note;
+use shared::SUBORDER;
+use shared::TREE_DEPTH;
+
+fn gpk() -> ecdh::Point {
+    super::kat_gpk()
+}
+fn r() -> ecdh::Point {
+    super::kat_frost_r()
+}
+fn rin() -> ecdh::Point {
+    super::recipient_in_pub()
+}
+fn oldn() -> Note {
+    super::ms_input(100)
+}
+fn memon() -> Note {
+    super::kat_memo_note(40)
+}
+fn chgn() -> Note {
+    super::kat_change_note(60)
+}
+
+fn run(
+    cx: Field,
+    cy: Field,
+    g: ecdh::Point,
+    fr: ecdh::Point,
+    z: Field,
+    rp: ecdh::Point,
+    o: Note,
+    idx: Field,
+    mo: Note,
+    me: Field,
+    ch: Note,
+    ce: Field,
+) {
+    let _ = super::main(
+        cx,
+        cy,
+        g,
+        fr,
+        z,
+        rp,
+        rp,
+        o,
+        idx,
+        [0; TREE_DEPTH],
+        mo,
+        me,
+        ch,
+        ce,
+    );
+}
+fn v(
+    g: ecdh::Point,
+    fr: ecdh::Point,
+    z: Field,
+    rp: ecdh::Point,
+    o: Note,
+    idx: Field,
+    mo: Note,
+    me: Field,
+    ch: Note,
+    ce: Field,
+) {
+    run(super::CX, super::CY, g, fr, z, rp, o, idx, mo, me, ch, ce);
+}
+
+#[test]
+fn m_valid_accepts() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test(should_fail_with = "gpk must not be the identity")]
+fn m_gpk_identity() {
+    v(
+        mutation::bad_identity(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail)]
+fn m_gpk_off_curve() {
+    v(
+        mutation::bad_off_curve(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "gpk not in prime-order subgroup")]
+fn m_gpk_small_order() {
+    v(
+        mutation::bad_small_order(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "gpk not in prime-order subgroup")]
+fn m_gpk_non_subgroup() {
+    v(
+        mutation::bad_non_subgroup(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "spender does not own this multisig note")]
+fn m_gpk_wrong_valid() {
+    v(
+        r(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test(should_fail_with = "R must not be the identity")]
+fn m_frost_r_identity() {
+    v(
+        gpk(),
+        mutation::bad_identity(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail)]
+fn m_frost_r_off_curve() {
+    v(
+        gpk(),
+        mutation::bad_off_curve(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "FROST signature invalid")]
+fn m_frost_r_non_subgroup() {
+    v(
+        gpk(),
+        mutation::bad_non_subgroup(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "FROST signature invalid")]
+fn m_frost_r_mutated() {
+    v(
+        gpk(),
+        gpk(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test(should_fail_with = "scalar must be non-zero")]
+fn m_frost_z_zero() {
+    v(
+        gpk(),
+        r(),
+        0,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "scalar not in BabyJubJub prime-order subgroup")]
+fn m_frost_z_ge_suborder() {
+    v(
+        gpk(),
+        r(),
+        SUBORDER,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "FROST signature invalid")]
+fn m_frost_z_mutated() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z + 1,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "FROST signature invalid")]
+fn m_signed_value_swap() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        super::kat_memo_note(41),
+        super::KAT_MEMO_EPH,
+        super::kat_change_note(59),
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test(should_fail_with = "spender does not own this multisig note")]
+fn m_old_owner_mutated() {
+    let mut o = oldn();
+    o.owner = o.owner + 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        o,
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "unexpected note type")]
+fn m_old_note_type() {
+    let mut o = oldn();
+    o.note_type = 0;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        o,
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "unexpected note version")]
+fn m_old_note_version() {
+    let mut o = oldn();
+    o.note_version = 2;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        o,
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "memo asset mismatch")]
+fn m_old_asset_mismatch() {
+    let mut o = oldn();
+    o.asset_id = super::ASSET_ID + 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        o,
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "non-canonical leaf index")]
+fn m_noncanonical_leaf_index() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        7,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test(should_fail_with = "change asset mismatch")]
+fn m_change_asset_mismatch() {
+    let mut ch = chgn();
+    ch.asset_id = super::ASSET_ID + 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        ch,
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test(should_fail_with = "value not conserved")]
+fn m_value_not_conserved() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        super::kat_memo_note(41),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "attempt to add with overflow")]
+fn m_value_output_overflow() {
+    let mut ch = chgn();
+    ch.value = 0xffffffffffffffffffffffffffffffff;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        super::kat_memo_note(1),
+        super::KAT_MEMO_EPH,
+        ch,
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test(should_fail_with = "ephemerals must be distinct")]
+fn m_ephemerals_equal() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_MEMO_EPH,
+    );
+}
+
+#[test(should_fail_with = "incoming memo note_type must be STANDARD or MULTISIG")]
+fn m_memo_note_type() {
+    let mut mo = memon();
+    mo.note_type = 2;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        mo,
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "memo owner must be the recipient owner")]
+fn m_memo_owner_mismatch() {
+    let mut mo = memon();
+    mo.owner = mo.owner + 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        mo,
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "unexpected note version")]
+fn m_memo_note_version() {
+    let mut mo = memon();
+    mo.note_version = 2;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        mo,
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "note conditions_hash must be zero")]
+fn m_memo_conditions_hash() {
+    let mut mo = memon();
+    mo.conditions_hash = 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        mo,
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "psi not bound to CEK")]
+fn m_memo_psi_unbound() {
+    let mut mo = memon();
+    mo.psi = mo.psi + 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        mo,
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "memo parents must be hidden sentinel")]
+fn m_memo_parents_forged() {
+    let mut mo = memon();
+    mo.parents = 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        mo,
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+// Odd-y point (proven odd in even_y::test_is_even_y_kat); it clears every earlier guard, so the even-y tag assert fires.
+#[test(should_fail_with = "incoming discovery tag must be even-y")]
+fn m_memo_incoming_odd_y() {
+    let odd = ecdh::Point {
+        x: 0x158b1d9682257c0832785c20b002c360b7f84f59f253e667659cf90c1455f764,
+        y: 0x132a0f65758b4775374cfc0a98d7f8a186e1cad626e4e4cd37b73532d7e50101,
+    };
+    let mut mo = memon();
+    mo.owner = 0x2874ae964d8b283e2f521a7f14125fc92747bb9770139b8d4b70ee09e2d83785;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        odd,
+        oldn(),
+        0,
+        mo,
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test(should_fail_with = "multisig self note must be MULTISIG")]
+fn m_change_note_type_standard() {
+    let mut ch = chgn();
+    ch.note_type = 0;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        ch,
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "multisig change/self must be owned by the account gpk")]
+fn m_change_owner_off_gpk() {
+    let mut ch = chgn();
+    ch.owner = ch.owner + 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        ch,
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "unexpected note version")]
+fn m_change_note_version() {
+    let mut ch = chgn();
+    ch.note_version = 2;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        ch,
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "note conditions_hash must be zero")]
+fn m_change_conditions_hash() {
+    let mut ch = chgn();
+    ch.conditions_hash = 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        ch,
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "psi not bound to CEK")]
+fn m_change_psi_unbound() {
+    let mut ch = chgn();
+    ch.psi = ch.psi + 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        ch,
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "output parents not bound to consumed inputs")]
+fn m_change_parents_forged() {
+    let mut ch = chgn();
+    ch.parents = 1;
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        ch,
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+fn ms_memo(vp: ecdh::Point) {
+    let _ = super::main(
+        super::CX,
+        super::CY,
+        gpk(),
+        super::kat_ms_memo_frost_r(),
+        super::KAT_MS_MEMO_FROST_Z,
+        super::recipient_spend_pub(),
+        vp,
+        oldn(),
+        0,
+        [0; TREE_DEPTH],
+        super::kat_ms_memo_note(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test]
+fn m_ms_memo_valid_accepts() {
+    ms_memo(rin());
+}
+// The quorum signs memo_tag, so swapping only the view key re-points discovery while the memo leaf and its owner stay intact.
+#[test(should_fail_with = "FROST signature invalid")]
+fn m_ms_memo_view_key_substituted() {
+    let substituted_view = ecdh::Point {
+        x: 0x0d2c8ddcfdd735e9fdd0d51538022ba533cfa83b81d2acec70b17f505c17f048,
+        y: 0x0de8d63022d65a455c438aacda47f8bc4141566562eb1cab57e5085b62a5a75e,
+    };
+    ms_memo(substituted_view);
+}
+
+#[test(should_fail_with = "memo spend key must not be the identity")]
+fn m_recipient_identity() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        mutation::bad_identity(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail)]
+fn m_recipient_off_curve() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        mutation::bad_off_curve(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "memo spend key not in prime-order subgroup")]
+fn m_recipient_small_order() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        mutation::bad_small_order(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "memo spend key not in prime-order subgroup")]
+fn m_recipient_non_subgroup() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        mutation::bad_non_subgroup(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test(should_fail_with = "compliance key must not be the identity")]
+fn m_compliance_identity() {
+    let p = mutation::bad_identity();
+    run(
+        p.x,
+        p.y,
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "compliance key not in prime-order subgroup")]
+fn m_compliance_non_subgroup() {
+    let p = mutation::bad_non_subgroup();
+    run(
+        p.x,
+        p.y,
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+
+#[test(should_fail_with = "scalar must be non-zero")]
+fn m_memo_eph_zero() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        0,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "scalar not in BabyJubJub prime-order subgroup")]
+fn m_memo_eph_ge_suborder() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        SUBORDER,
+        chgn(),
+        super::KAT_CHANGE_EPH,
+    );
+}
+#[test(should_fail_with = "scalar must be non-zero")]
+fn m_change_eph_zero() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        0,
+    );
+}
+#[test(should_fail_with = "scalar not in BabyJubJub prime-order subgroup")]
+fn m_change_eph_ge_suborder() {
+    v(
+        gpk(),
+        r(),
+        super::KAT_FROST_Z,
+        rin(),
+        oldn(),
+        0,
+        memon(),
+        super::KAT_MEMO_EPH,
+        chgn(),
+        SUBORDER,
+    );
+}
+
+// Relocation: the honest sibling sequence moved into a different order-preserving choice of levels, index bits set
+// to match. Absorbing the level into every tree hash is what keeps the two roots apart; without it one note proves
+// membership at many indexes and Poseidon2(psi, leaf_index) mints a fresh nullifier under each. Driven through
+// open_multisig_note rather than main: the FROST signature is over the root and nullifier, so a second index needs
+// a second signature the KAT cannot supply.
+#[test]
+fn m_relocated_index_moves_root_and_nullifier() {
+    let mut low = [0; TREE_DEPTH];
+    low[0] = 7;
+    low[1] = 11;
+    let mut high = [0; TREE_DEPTH];
+    high[2] = 7;
+    high[3] = 11;
+    let (nf_low, root_low) = open_multisig_note(oldn(), gpk(), 3, low);
+    let (nf_high, root_high) = open_multisig_note(oldn(), gpk(), 12, high);
+    assert(root_low != root_high, "relocated siblings reproduced the root");
+    assert(nf_low != nf_high, "relocated index left the nullifier unchanged");
+}

@@ -1,0 +1,113 @@
+[
+  {
+    "circuit": "deposit",
+    "wasmBytes": 20291510,
+    "wasmInstantiateMs": 185.30000000447035,
+    "acirBytes": 301476,
+    "witnessBytes": 185762,
+    "ccsBytes": 761309,
+    "ccsLoadMs": 24.599999994039536,
+    "pkBytes": 7155647,
+    "pkLoadMs": 274.5,
+    "proveMs": 19155.70000000298,
+    "proofLen": 388,
+    "pwLen": 428,
+    "jsHeapBeforeMB": 31.2,
+    "jsHeapAfterMB": 31.2,
+    "jsHeapPeakDeltaMB": 0,
+    "wasmMemoryPeakMB": 58.720256,
+    "wallMsFromNode": 19067,
+    "hostBefore": {
+      "loadavg": [
+        0.35,
+        2.51,
+        6.14
+      ],
+      "freeMemMB": 2480.1,
+      "totalMemMB": 4015.7
+    },
+    "hostAfter": {
+      "loadavg": [
+        0.54,
+        2.41,
+        6.03
+      ],
+      "freeMemMB": 2291.5,
+      "totalMemMB": 4015.7
+    }
+  },
+  {
+    "circuit": "withdraw",
+    "wasmBytes": 20291510,
+    "wasmInstantiateMs": 126.39999999850988,
+    "acirBytes": 1535036,
+    "witnessBytes": 483839,
+    "ccsBytes": 2493725,
+    "ccsLoadMs": 75.40000000596046,
+    "pkBytes": 18434855,
+    "pkLoadMs": 680.0999999940395,
+    "proveMs": 47402.69999999553,
+    "proofLen": 388,
+    "pwLen": 556,
+    "jsHeapBeforeMB": 44.7,
+    "jsHeapAfterMB": 44.7,
+    "jsHeapPeakDeltaMB": 0,
+    "wasmMemoryPeakMB": 146.80064,
+    "wallMsFromNode": 46384,
+    "hostBefore": {
+      "loadavg": [
+        0.54,
+        2.41,
+        6.03
+      ],
+      "freeMemMB": 2419.4,
+      "totalMemMB": 4015.7
+    },
+    "hostAfter": {
+      "loadavg": [
+        0.8,
+        2.19,
+        5.76
+      ],
+      "freeMemMB": 2253.5,
+      "totalMemMB": 4015.7
+    }
+  },
+  {
+    "circuit": "transfer_multisig",
+    "wasmBytes": 20291510,
+    "wasmInstantiateMs": 141.19999999552965,
+    "acirBytes": 1798817,
+    "witnessBytes": 687865,
+    "ccsBytes": 3745301,
+    "ccsLoadMs": 101.20000000298023,
+    "pkBytes": 30733365,
+    "pkLoadMs": 1070.5,
+    "proveMs": 77012.70000000298,
+    "proofLen": 388,
+    "pwLen": 780,
+    "jsHeapBeforeMB": 60.3,
+    "jsHeapAfterMB": 60.3,
+    "jsHeapPeakDeltaMB": 0,
+    "wasmMemoryPeakMB": 251.65824,
+    "wallMsFromNode": 76445,
+    "hostBefore": {
+      "loadavg": [
+        0.8,
+        2.19,
+        5.76
+      ],
+      "freeMemMB": 2506.2,
+      "totalMemMB": 4015.7
+    },
+    "hostAfter": {
+      "loadavg": [
+        0.99,
+        1.94,
+        5.39
+      ],
+      "freeMemMB": 2195,
+      "totalMemMB": 4015.7
+    }
+  }
+]

@@ -1,0 +1,28 @@
+node_modules/
+dist/
+.anchor/
+.env
+.DS_Store
+
+# Circuit build artifacts: large or execution-specific files stay untracked; commit only the
+# ACIR (.json) and verifying keys (.vk) under circuits/target/ (see circuits/README.md).
+target/
+!circuits/target/
+circuits/target/*
+!circuits/target/*.json
+!circuits/target/*.vk
+circuits/target/*-keypair.json
+*.pk
+*.ccs
+*.so
+
+# Workstream B: small, deliberately-tracked deploy artifacts so e2e (F) can
+# load a real built kakure_pool/mock_verifier without needing to
+# `cargo build-sbf` itself (that requires the Solana SBF toolchain).
+!programs/deploy/
+!programs/deploy/*.so
+!programs/deploy/*-keypair.json
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/public/prover-wasm/prover.wasm
+apps/web/public/prover-wasm/circuits/

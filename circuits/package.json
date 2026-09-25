@@ -1,0 +1,19 @@
+{
+  "name": "@kakure/circuits",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Kakure Noir circuit workspace: Poseidon v1 LeanIMT KAT generation and manifest drift test",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "kat:gen": "node scripts/gen_lean_imt_kat.mjs",
+    "kat:check": "node scripts/gen_lean_imt_kat.mjs --check",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "circomlibjs": "^0.1.7"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}

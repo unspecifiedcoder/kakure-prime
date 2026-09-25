@@ -1,0 +1,9 @@
+[package]
+name = "transfer"
+type = "bin"
+authors = ["Kakure Labs"]
+license = "Apache-2.0"
+
+[dependencies]
+shared = { path = "../../shared" }
+ecdh = { path = "../../vendor/ecdh" }

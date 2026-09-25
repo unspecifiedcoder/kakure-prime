@@ -1,0 +1,57 @@
+# Prover.toml for the transfer_multisig KAT (kat_multisig_transfer_accepts in src/main.nr),
+# used by `just verify-kat` to exercise the real Sunspot prove/verify pipeline end to end.
+# Values copied verbatim from the KAT fixture helpers in src/main.nr.
+# regenerated for kakure.* domains (circuits/scripts/gen_frost_kats.ts)
+compliance_pubkey_x = "0x085ed469c9a9f102b6d4f6f909b8ceaf6ca49b39759ac2e0feb7e0aada8b7111"
+compliance_pubkey_y = "0x245e25ab2bd42f0280a5ade750828dd6868f5225ae798d6b51c676f519c8f4e8"
+frost_z = "0x04ff02bb111b27461ff96210e331fc5be63f4fd36ea24dce0a77da9c4ed923c8"
+memo_eph = "4"
+change_eph = "5"
+old_note_index = "0"
+old_note_path = ["0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"]
+
+[gpk]
+x = "0x2546ab52faee9ab8ead1ad868567473b9757c6456c137274b12a5c51330d764d"
+y = "0x0d7a564269d3675f75799ee9d7574b00d01190b243041994c0e460af507a71aa"
+
+[frost_r]
+x = "0x24e57b1f9a6718f1f762d44405f35a6b7069a324020ac2aa0640271d488fc864"
+y = "0x2634e350fcead5983008f940bc8956cd62adba8c81816ded57f5fba8306bfd87"
+
+[recipient_spend_pub]
+x = "0x1b16e357953d68d73398c838aa883cc65ddae2aef75a4bc437e4232afdbe43c8"
+y = "0x02d7ee0be055310d2895c5ed5090a8aa1c700e73c64294f1e817ec77f46b4fdc"
+
+[recipient_view_pub]
+x = "0x1b16e357953d68d73398c838aa883cc65ddae2aef75a4bc437e4232afdbe43c8"
+y = "0x02d7ee0be055310d2895c5ed5090a8aa1c700e73c64294f1e817ec77f46b4fdc"
+
+[old_note]
+note_version = "1"
+asset_id = "0x1234567890123456789012345678901234567890"
+note_type = "1"
+conditions_hash = "0"
+value = "100"
+owner = "0x0f0c6b3c0a818ce637e33dc7b49438f89a0531ef1ad200710fdb897354f7f2ea"
+psi = "0x0981a88f9e119b057498a4ab99ed5379a1ea91c642454fc0c07aacc1f5cd5731"
+parents = "0"
+
+[memo_note]
+note_version = "1"
+asset_id = "0x1234567890123456789012345678901234567890"
+note_type = "0"
+conditions_hash = "0"
+value = "40"
+owner = "0x1113074e2fb269d979ad2b64e6fe70b1967c67b007b706600603b847306aefe3"
+psi = "0x2d968b4ef3090d631f98d339ca1aad9241cd14f7a3a584983662760630b8db2e"
+parents = "0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000"
+
+[change_note]
+note_version = "1"
+asset_id = "0x1234567890123456789012345678901234567890"
+note_type = "1"
+conditions_hash = "0"
+value = "60"
+owner = "0x0f0c6b3c0a818ce637e33dc7b49438f89a0531ef1ad200710fdb897354f7f2ea"
+psi = "0x1a72e6c3463dd2509150c482ad772ede1290d453977279eed05f10ae8cbd75f0"
+parents = "0"

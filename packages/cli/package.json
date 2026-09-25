@@ -1,0 +1,47 @@
+{
+  "name": "@kakure/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "kakure": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.js"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "build": "tsup",
+    "test": "vitest run --pool=forks --poolOptions.forks.maxForks=2",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "lint": "eslint 'src/**/*.ts'"
+  },
+  "author": "kakure",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@kakure/prover": "workspace:*",
+    "@kakure/sdk": "workspace:*",
+    "@noble/ciphers": "^2.4.0",
+    "@noble/curves": "^1.9.1",
+    "@noble/hashes": "^1.5.0",
+    "@solana/web3.js": "^1.98.0",
+    "@zk-kit/baby-jubjub": "^1.0.3",
+    "commander": "^15.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "fastify": "^5.12.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

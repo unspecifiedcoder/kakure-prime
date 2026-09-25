@@ -1,0 +1,42 @@
+{
+  "name": "@kakure/helper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "kakure-helper": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./wire": {
+      "types": "./dist/wire.d.ts",
+      "import": "./dist/wire.js"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint 'src/**/*.ts'"
+  },
+  "author": "kakure",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@fastify/cors": "^11.3.0",
+    "@kakure/prover": "workspace:*",
+    "@kakure/sdk": "workspace:*",
+    "fastify": "^5.12.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

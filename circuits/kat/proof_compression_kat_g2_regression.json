@@ -1,0 +1,9 @@
+{
+  "_comment": "Workstream G regression KAT: a real deposit proof's B (G2) point, captured from a live e2e run whose TS compressProof() got the sign-flag bit wrong (compared the Fq2 coordinate halves in the wrong priority order) and was rejected on-chain by the real Sunspot verifier with \"Proof verification failed!\" even though decompression itself succeeded. The single-proof KAT in proof_compression_kat.json did not catch this because its B point's second serialized half happened to tie its own negation (y1 == -y1), which made the (wrong) primary-comparison choice irrelevant there. Ground truth (both the uncompressed and correctly-compressed bytes) was computed with solana_bn254's real Rust compression, independently of this repo's TS port.",
+  "uncompressed": {
+    "B": "1c1c87ba08ec25e7a9e738f1edbe8d3c812580f45513ef6a0181d7849b10d0b503375eb272459b26eb7bdaa65424c9d8595f92e8eb09b2f9877a05ca804ade0b0fbaa89a2756fc445184b04c15c728d2e2d3ddd931b04aab558df254426ed7a823c8a7c7296ad4037c80be747610108f4b6ade2111fe90c14059fd4b4f114777"
+  },
+  "compressed": {
+    "B": "1c1c87ba08ec25e7a9e738f1edbe8d3c812580f45513ef6a0181d7849b10d0b503375eb272459b26eb7bdaa65424c9d8595f92e8eb09b2f9877a05ca804ade0b"
+  }
+}

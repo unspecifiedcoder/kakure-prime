@@ -1,0 +1,37 @@
+{
+  "name": "@kakure/prover",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "build": "tsup",
+    "test": "vitest run --pool=forks --poolOptions.forks.maxForks=2",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "lint": "eslint 'src/**/*.ts'"
+  },
+  "author": "kakure",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@aztec/foundation": "2.1.11",
+    "@kakure/sdk": "workspace:*",
+    "@noir-lang/noir_js": "1.0.0-beta.22",
+    "@zk-kit/baby-jubjub": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

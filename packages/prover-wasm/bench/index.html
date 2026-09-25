@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>kakure prover-wasm bench</title>
+    <script src="./wasm_exec.js"></script>
+  </head>
+  <body>
+    <pre id="log"></pre>
+    <script type="module">
+      const log = (msg) => {
+        console.log(msg);
+        document.getElementById("log").textContent += msg + "\n";
+      };
+
+      async function fetchBytes(url) {
+        const t0 = performance.now();
+        const res = await fetch(url);
+        const buf = new Uint8Array(await res.arrayBuffer());
+        const t1 = performance.now();
+        return { bytes: buf, ms: t1 - t0 };
+      }
+
+      async function runBench(circuit) {
+        const result = { circuit };
+
+        // 1. Compile + instantiate the wasm module.
+        const t0wasm = performance.now();
+        const wasmResp = await fetch("./prover.wasm");
+        const wasmBytes = await wasmResp.arrayBuffer();
+        result.wasmBytes = wasmBytes.byteLength;
+        const go = new Go();
+        const { instance } = await WebAssembly.instantiate(wasmBytes, go.importObject);
+        const t1wasm = performance.now();
+        result.wasmInstantiateMs = t1wasm - t0wasm;
+
+        const runPromise = go.run(instance);
+        runPromise.catch((err) => log("go.run() failed: " + err));
+        while (!globalThis.kakureProveReady) {
+          await new Promise((r) => setTimeout(r, 5));
+        }
+
+        // 2. Fetch circuit artifacts (measures real network+parse time for the .pk, per the spec).
+        const acirRes = await fetch(`./${circuit}/acir.json`);
+        const acirJson = await acirRes.text();
+        result.acirBytes = acirJson.length;
+
+        const witness = await fetchBytes(`./${circuit}/witness.gzdat`);
+        result.witnessBytes = witness.bytes.length;
+
+        const ccs = await fetchBytes(`./${circuit}/circuit.ccs`);
+        result.ccsBytes = ccs.bytes.length;
+        result.ccsLoadMs = ccs.ms;
+
+        const pk = await fetchBytes(`./${circuit}/circuit.pk`);
+        result.pkBytes = pk.bytes.length;
+        result.pkLoadMs = pk.ms;
+
+        // 3. Prove, tracking wall time, (Chrome-only) JS heap, and the wasm
+        // linear memory's peak size (Go's wasm runtime grows this ArrayBuffer
+        // on demand and essentially never shrinks it, so its size at the end
+        // of a prove call is a good proxy for the peak during it).
+        const wasmMemory = () => instance.exports.mem?.buffer?.byteLength ?? null;
+        let wasmMemPeak = wasmMemory();
+        const memPoll = setInterval(() => {
+          const cur = wasmMemory();
+          if (cur != null && (wasmMemPeak == null || cur > wasmMemPeak)) wasmMemPeak = cur;
+        }, 250);
+
+        const memBefore = performance.memory ? performance.memory.usedJSHeapSize : null;
+        const t0prove = performance.now();
+        const { proof, pw } = await globalThis.kakureProve(acirJson, witness.bytes, ccs.bytes, pk.bytes);
+        const t1prove = performance.now();
+        const memAfter = performance.memory ? performance.memory.usedJSHeapSize : null;
+        clearInterval(memPoll);
+        // The interval above can starve entirely if Go's wasm scheduler never yields back to the
+        // browser's macrotask queue during a long CPU-bound goroutine (observed empirically: the
+        // poll can report the exact pre-prove baseline for the whole call) -- always take one more
+        // sample right after the await resolves so the peak reflects at least the final size,
+        // which Go's allocator essentially never shrinks back down from.
+        {
+          const finalSample = wasmMemory();
+          if (finalSample != null && (wasmMemPeak == null || finalSample > wasmMemPeak)) {
+            wasmMemPeak = finalSample;
+          }
+        }
+
+        result.proveMs = t1prove - t0prove;
+        result.proofLen = proof.length;
+        result.pwLen = pw.length;
+        result.jsHeapBeforeMB = memBefore != null ? memBefore / 1e6 : null;
+        result.jsHeapAfterMB = memAfter != null ? memAfter / 1e6 : null;
+        result.jsHeapPeakDeltaMB =
+          memBefore != null && memAfter != null ? (memAfter - memBefore) / 1e6 : null;
+        result.wasmMemoryPeakMB = wasmMemPeak != null ? wasmMemPeak / 1e6 : null;
+
+        // Base64 so Playwright can pull the raw bytes back out for a `sunspot verify` cross-check.
+        result.proofB64 = btoa(String.fromCharCode(...proof));
+        result.pwB64 = btoa(String.fromCharCode(...pw));
+
+        return result;
+      }
+
+      window.__kakureRunBench = runBench;
+      log("bench page ready");
+    </script>
+  </body>
+</html>

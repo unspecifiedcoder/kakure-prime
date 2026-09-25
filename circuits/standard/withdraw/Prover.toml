@@ -1,0 +1,29 @@
+intent_hash = "0"
+recipient = "0x1234567890123456789012345678901234567890"
+change_eph = "8"
+compliance_pubkey_x = "0x085ed469c9a9f102b6d4f6f909b8ceaf6ca49b39759ac2e0feb7e0aada8b7111"
+compliance_pubkey_y = "0x245e25ab2bd42f0280a5ade750828dd6868f5225ae798d6b51c676f519c8f4e8"
+old_note_index = "0"
+old_note_path = ["0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"]
+spend_scalar = "789"
+withdraw_value = "40"
+
+[change_note]
+asset_id = "0x1234567890123456789012345678901234567890"
+conditions_hash = "0"
+note_type = "0"
+note_version = "1"
+owner = "0x2874ae964d8b283e2f521a7f14125fc92747bb9770139b8d4b70ee09e2d83785"
+parents = "0"
+psi = "0x1e06ec4b4877317f82d92c39e35a562ee9f9dfedb6fcd3fee5ef9eb27ba0b764"
+value = "60"
+
+[old_note]
+asset_id = "0x1234567890123456789012345678901234567890"
+conditions_hash = "0"
+note_type = "0"
+note_version = "1"
+owner = "0x2874ae964d8b283e2f521a7f14125fc92747bb9770139b8d4b70ee09e2d83785"
+parents = "0"
+psi = "0x1a72e6c3463dd2509150c482ad772ede1290d453977279eed05f10ae8cbd75f0"
+value = "100"

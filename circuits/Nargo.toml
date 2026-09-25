@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "shared",
+    "standard/deposit",
+    "standard/withdraw",
+    "standard/transfer",
+    "multisig/withdraw_multisig",
+    "multisig/transfer_multisig",
+    "multisig/split_multisig",
+    "multisig/join_multisig",
+]

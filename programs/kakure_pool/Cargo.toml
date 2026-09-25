@@ -1,0 +1,37 @@
+[package]
+name = "kakure_pool"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+# Dev/test only: enables the `VerifyOnly` instruction (direct CPI into a
+# verifier program with no nullifier/root/leaf side effects), used by the
+# real-verifier litesvm test. Must never be enabled in a release build --
+# it lets ANY signer force a CPI into an arbitrary registered verifier
+# program with attacker-chosen instruction data, which is fine for a
+# throwaway devnet/test deploy but not for a program holding real funds.
+dev-verify = []
+
+[dependencies]
+solana-program = { workspace = true }
+solana-poseidon = { workspace = true }
+borsh = { workspace = true }
+spl-token = { workspace = true }
+solana-bn254 = { workspace = true }
+# No dependency on spl-associated-token-account(-interface): see ata.rs.
+#
+# NOTE on Cargo.lock (this package's own standalone workspace): several
+# transitive dependencies (blake3, zeroize, indexmap, and their proc-macro
+# companions) publish releases whose manifests declare `edition = "2024"`,
+# which the cargo (1.84.0) bundled in Solana's platform-tools v1.51
+# (`cargo build-sbf`) cannot parse. Rather than pin exact versions here
+# (which would leak into any other workspace that path-depends on this
+# crate, e.g. tests-litesvm, and could conflict with THEIR needs), those
+# are pinned only in this package's own Cargo.lock via
+# `cargo update -p <pkg> --precise <version>` -- see
+# docs/superpowers/plans/2026-09-05-ws-b-program.md for the exact commands
+# if Cargo.lock ever needs regenerating from scratch.

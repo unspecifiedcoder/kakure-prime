@@ -1,0 +1,44 @@
+[workspace]
+resolver = "2"
+members = ["programs/kakure_pool", "programs/mock_verifier"]
+
+[workspace.dependencies]
+# Pinned to the 2.x line (pre-micro-crate-split `solana-program`), not the
+# 3.x/4.x line: 3.x's dependency graph eventually pulls solana-address 2.x's
+# optional `wincode` integration (wincode >=0.6, itself `edition = "2024"`),
+# which the cargo (1.84.0) bundled in Solana's platform-tools v1.51
+# (`cargo build-sbf`) cannot even parse -- a dead end reached only after
+# exhausting per-crate version pins (see git history on this file for the
+# trail). 2.x's monolithic solana-program never touches that branch.
+solana-program = "2"
+solana-poseidon = "2"
+borsh = "1.5"
+spl-token = { version = "6", features = ["no-entrypoint"] }
+sha2 = "0.10"
+# Groth16 proof (de)compression for the on-chain wire format (workstream G,
+# see docs/superpowers/plans/2026-09-05-ws-g-txsize.md). The Cargo.toml
+# requirement here is a normal caret range (NOT an exact "=3.1.2" pin --
+# that would force every OTHER workspace path-depending on `kakure_pool`,
+# e.g. `tests-litesvm`, which needs solana-bn254 ^3.2.1 transitively via
+# litesvm's own `solana-syscalls` dep, into an unresolvable version
+# conflict). This ROOT workspace's own Cargo.lock is instead pinned to the
+# older 3.1.2 explicitly (`cargo update -p solana-bn254 --precise 3.1.2`,
+# alongside the same treatment for blake3/zeroize/indexmap and their derive
+# companions -- see that Cargo.lock's git history): 3.2.x bumps
+# solana-bn254's own ark-ec dep to 0.5.0, which pulls `educe` ->
+# `enum-ordinalize` 4.4.x, an `edition = "2024"` manifest the cargo (1.84.0)
+# bundled in Solana's platform-tools v1.51 (`cargo build-sbf`) cannot even
+# parse for Cargo.lock resolution (cfg-gated deps like solana-bn254's
+# `cfg(not(target_os = "solana"))`-only ark-* still have to resolve into
+# Cargo.lock for every dependency graph regardless of build target --
+# Cargo does not evaluate target cfgs during dependency *resolution*, only
+# during compilation). 3.1.2's ark-bn254/ark-ec/ark-ff/ark-serialize are all
+# pinned to the older "0.4.0" line, which has no such issue. solana-bn254
+# does not touch solana-program at all, so it does not reopen the
+# edition2024 dead end documented above either way.
+solana-bn254 = "3.1.2"
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1

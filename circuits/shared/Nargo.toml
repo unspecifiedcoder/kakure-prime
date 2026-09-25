@@ -1,0 +1,10 @@
+[package]
+name = "shared"
+type = "lib"
+authors = ["Kakure Labs"]
+license = "Apache-2.0"
+
+[dependencies]
+poseidon = { path = "../vendor/poseidon" }
+ecdh = { path = "../vendor/ecdh" }
+edwards = { path = "../vendor/noir-edwards" }

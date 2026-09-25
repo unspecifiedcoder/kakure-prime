@@ -1,0 +1,31 @@
+# Build output (tsup).
+dist/
+*.tsbuildinfo
+
+# Go build artifacts -- the wasm binary is ~20MB and reproducible from go/*.go via the build
+# command in this package's README; debug binaries are throwaway.
+go/prover.wasm
+go/debugverify*
+go/*.wasm.proof
+go/*.wasm.pw
+
+# Circuit artifacts used for local benching (.ccs/.pk are gitignored everywhere in this repo --
+# see circuits/README.md -- and the .gz witnesses/large public-input files here are just as large;
+# regenerate with `sunspot compile`/`sunspot setup`/the gen_*_witness scripts documented in the
+# README rather than committing them).
+bench/public/*/circuit.ccs
+bench/public/*/circuit.pk
+bench/public/*/circuit.vk
+bench/public/*/acir.json
+bench/public/*/witness.gzdat
+bench/public/prover.wasm
+bench/dist/
+bench/node_modules/
+bench/preview.log
+bench/preview.pid
+bench/tm_run.pid
+bench/transfer_multisig_run.log
+bench/*.chromium.proof
+bench/*.chromium.pw
+
+node_modules/

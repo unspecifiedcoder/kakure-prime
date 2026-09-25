@@ -1,0 +1,207 @@
+{
+  "note": "kakure_pool is a native solana-program crate, not an Anchor program (Anchor 1.1.2 fails to run on this container's glibc 2.35, and the only working local Anchor, 0.30.0, predates Agave 3.0; see the workstream-B final report). This file is therefore a hand-written IDL-equivalent, not a real Anchor IDL, published early per the task brief so the SDK team can code against final account/instruction shapes. Wire format is documented per-field below.",
+  "programName": "kakure_pool",
+  "encoding": {
+    "instructions": "borsh::to_vec of the Rust `PoolInstruction` enum (programs/kakure_pool/src/instruction.rs): a single leading u8 variant tag equal to the variant's 0-based declaration order below, followed by the borsh encoding of its fields. This is NOT Anchor's 8-byte sighash discriminator.",
+    "events": "sol_log_data(tag_bytes, borsh(event_struct)) -- one program-log line per event, NOT emit_cpi! (Anchor unavailable). tag_bytes is the ASCII string in each event's `tag` field below; borsh() has no leading discriminator.",
+    "fields": "[u8;32] fields are big-endian 32-byte field elements unless noted; Pubkey fields are the raw 32-byte address.",
+    "verifierCpi": "Internal to the program (not part of any instruction's own encoding): the CPI data sent to a verifier program is `proof_bytes ‖ 12-byte gnark witness header (nr_public_inputs, nr_private_inputs=0, entries_count, each big-endian u32) ‖ public_inputs (32 bytes each, big-endian, in order)` -- exactly gnark's own `.pw` serialization (see circuits/README.md), so a real Sunspot-built verifier binary can be dropped in unmodified."
+  },
+  "instructions": [
+    {
+      "tag": 0, "name": "initialize",
+      "args": [
+        { "name": "compliance_pk_x", "type": "[u8;32]" },
+        { "name": "compliance_pk_y", "type": "[u8;32]" },
+        { "name": "verifiers", "type": "[Pubkey;7]" },
+        { "name": "genesis_leaf", "type": "[u8;32]", "note": "client-computed Poseidon2 genesisLeaf(genesis_hash_of_cluster) per spec I-5; program only checks it is nonzero and inserts it as leaf 0" }
+      ],
+      "accounts": [
+        { "name": "authority", "signer": true, "writable": true, "note": "payer" },
+        { "name": "pool", "writable": true, "pda": ["pool"] },
+        { "name": "system_program" }
+      ]
+    },
+    {
+      "tag": 1, "name": "set_verifier",
+      "args": [ { "name": "circuit_id", "type": "u8" }, { "name": "program", "type": "Pubkey" } ],
+      "accounts": [ { "name": "authority", "signer": true }, { "name": "pool", "writable": true } ]
+    },
+    {
+      "tag": 2, "name": "rotate_compliance_key",
+      "args": [ { "name": "x", "type": "[u8;32]" }, { "name": "y", "type": "[u8;32]" } ],
+      "accounts": [ { "name": "authority", "signer": true }, { "name": "pool", "writable": true } ]
+    },
+    {
+      "tag": 3, "name": "set_paused",
+      "args": [ { "name": "paused", "type": "bool" } ],
+      "accounts": [ { "name": "authority", "signer": true }, { "name": "pool", "writable": true } ]
+    },
+    {
+      "tag": 4, "name": "deposit", "circuitId": 0, "publicInputCount": 13,
+      "args": [
+        { "name": "proof", "type": "Vec<u8>" },
+        { "name": "public_inputs", "type": "Vec<[u8;32]>" },
+        { "name": "amount", "type": "u64" }
+      ],
+      "accounts": [
+        { "name": "depositor", "signer": true, "writable": true },
+        { "name": "pool", "writable": true },
+        { "name": "asset", "writable": true, "pda": ["asset", "asset_id(20)"], "note": "created on first deposit for this asset_id" },
+        { "name": "mint" },
+        { "name": "vault", "writable": true, "note": "ATA of pool PDA for mint; created if missing" },
+        { "name": "depositor_token_account", "writable": true },
+        { "name": "token_program" },
+        { "name": "associated_token_program" },
+        { "name": "system_program" },
+        { "name": "verifier_program (remaining_accounts[0])", "note": "the verifier program for circuit 0; pool.verifiers[0] must equal this key" }
+      ]
+    },
+    {
+      "tag": 5, "name": "transfer", "circuitId": 1, "publicInputCount": 24,
+      "args": [ { "name": "proof", "type": "Vec<u8>" }, { "name": "public_inputs", "type": "Vec<[u8;32]>" } ],
+      "accounts": [
+        { "name": "payer", "signer": true, "writable": true },
+        { "name": "pool", "writable": true },
+        { "name": "nullifier", "writable": true, "pda": ["nullifier", "nullifier(32)"] },
+        { "name": "system_program" },
+        { "name": "verifier_program (remaining_accounts[0])", "note": "pool.verifiers[1]" }
+      ]
+    },
+    {
+      "tag": 6, "name": "transfer_multisig", "circuitId": 3, "publicInputCount": 24,
+      "args": [ { "name": "proof", "type": "Vec<u8>" }, { "name": "public_inputs", "type": "Vec<[u8;32]>" } ],
+      "accounts": [ "same as transfer", "verifier_program (remaining_accounts[0]) is pool.verifiers[3]" ]
+    },
+    {
+      "tag": 7, "name": "split_multisig", "circuitId": 4, "publicInputCount": 22,
+      "args": [ { "name": "proof", "type": "Vec<u8>" }, { "name": "public_inputs", "type": "Vec<[u8;32]>" } ],
+      "accounts": [
+        { "name": "payer", "signer": true, "writable": true },
+        { "name": "pool", "writable": true },
+        { "name": "nullifier", "writable": true, "pda": ["nullifier", "nullifier(32)"] },
+        { "name": "system_program" },
+        { "name": "verifier_program (remaining_accounts[0])", "note": "pool.verifiers[4]" }
+      ]
+    },
+    {
+      "tag": 8, "name": "join_multisig", "circuitId": 5, "publicInputCount": 14,
+      "args": [ { "name": "proof", "type": "Vec<u8>" }, { "name": "public_inputs", "type": "Vec<[u8;32]>" } ],
+      "accounts": [
+        { "name": "payer", "signer": true, "writable": true },
+        { "name": "pool", "writable": true },
+        { "name": "nullifier_a", "writable": true, "pda": ["nullifier", "nullifier_a(32)"] },
+        { "name": "nullifier_b", "writable": true, "pda": ["nullifier", "nullifier_b(32)"] },
+        { "name": "system_program" },
+        { "name": "verifier_program (remaining_accounts[0])", "note": "pool.verifiers[5]" }
+      ]
+    },
+    {
+      "tag": 9, "name": "withdraw", "circuitId": 2, "publicInputCount": 17,
+      "args": [
+        { "name": "proof", "type": "Vec<u8>" },
+        { "name": "public_inputs", "type": "Vec<[u8;32]>" },
+        { "name": "amount", "type": "u64" }
+      ],
+      "accounts": [
+        { "name": "payer", "signer": true, "writable": true },
+        { "name": "pool", "writable": true },
+        { "name": "nullifier", "writable": true, "pda": ["nullifier", "nullifier(32)"] },
+        { "name": "asset", "note": "read-only; asset.mint must equal mint, asset.vault must equal vault" },
+        { "name": "mint" },
+        { "name": "vault", "writable": true },
+        { "name": "destination_token_account", "writable": true, "note": "recipient_field(destination) must equal public_inputs[1]" },
+        { "name": "token_program" },
+        { "name": "system_program" },
+        { "name": "verifier_program (remaining_accounts[0])", "note": "pool.verifiers[2]" }
+      ]
+    },
+    {
+      "tag": 10, "name": "withdraw_multisig", "circuitId": 6, "publicInputCount": 17,
+      "args": [
+        { "name": "proof", "type": "Vec<u8>" },
+        { "name": "public_inputs", "type": "Vec<[u8;32]>" },
+        { "name": "amount", "type": "u64" }
+      ],
+      "accounts": [ "same as withdraw", "verifier_program (remaining_accounts[0]) is pool.verifiers[6]" ]
+    },
+    {
+      "tag": 11, "name": "verify_only",
+      "note": "dev/test only, compiled in only with the kakure_pool `dev-verify` cargo feature (never in a release build); appended at the end of the enum so the wire tag of every other instruction is stable regardless of the feature. CPIs directly into pool.verifiers[circuit_id] with no nullifier/root/leaf checks or side effects -- lets a test run a real verifier binary without needing the pool's on-chain state to match that proof's fixture root/leaves.",
+      "args": [
+        { "name": "circuit_id", "type": "u8" },
+        { "name": "proof", "type": "Vec<u8>" },
+        { "name": "public_inputs", "type": "Vec<[u8;32]>" }
+      ],
+      "accounts": [
+        { "name": "authority", "signer": true, "note": "must equal pool.authority" },
+        { "name": "pool" },
+        { "name": "verifier_program (remaining_accounts[0])", "note": "pool.verifiers[circuit_id]" }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Pool", "seeds": ["pool"], "lenBytes": 9550,
+      "fields": [
+        { "name": "authority", "type": "Pubkey", "offset": 0 },
+        { "name": "paused", "type": "bool (u8)", "offset": 32 },
+        { "name": "compliance_version", "type": "u32 (LE)", "offset": 33 },
+        { "name": "compliance_pk_x", "type": "[u8;32]", "offset": 37 },
+        { "name": "compliance_pk_y", "type": "[u8;32]", "offset": 69 },
+        { "name": "verifiers", "type": "[Pubkey;7]", "offset": 101 },
+        { "name": "next_leaf_index", "type": "u64 (LE)", "offset": 325 },
+        { "name": "side_nodes", "type": "[[u8;32];32]", "offset": 333 },
+        { "name": "root_cursor", "type": "u8", "offset": 1357 },
+        { "name": "roots", "type": "[[u8;32];256]", "offset": 1358 }
+      ]
+    },
+    {
+      "name": "Asset", "seeds": ["asset", "asset_id(20)"], "lenBytes": 85,
+      "fields": [
+        { "name": "mint", "type": "Pubkey", "offset": 0 },
+        { "name": "vault", "type": "Pubkey", "offset": 32 },
+        { "name": "asset_id", "type": "[u8;20]", "offset": 64 },
+        { "name": "bump", "type": "u8", "offset": 84 }
+      ]
+    },
+    {
+      "name": "Nullifier", "seeds": ["nullifier", "nullifier(32)"], "lenBytes": 1,
+      "fields": [ { "name": "bump", "type": "u8", "offset": 0 } ]
+    }
+  ],
+  "events": [
+    {
+      "tag": "kakure:NoteInserted",
+      "fields": [
+        { "name": "leaf_index", "type": "u64" },
+        { "name": "leaf", "type": "[u8;32]" },
+        { "name": "eph_pub_x", "type": "[u8;32]" },
+        { "name": "tag", "type": "Option<[u8;32]>", "note": "Some only for transfer memo notes" },
+        { "name": "cek_wrap", "type": "Option<[u8;32]>", "note": "Some only for transfer memo notes" },
+        { "name": "ciphertext", "type": "[[u8;32];7]" },
+        { "name": "root", "type": "[u8;32]" }
+      ]
+    },
+    {
+      "tag": "kakure:NullifierSpent",
+      "fields": [ { "name": "nullifier", "type": "[u8;32]" } ]
+    },
+    {
+      "tag": "kakure:ComplianceKeyRotated",
+      "fields": [
+        { "name": "old_version", "type": "u32" },
+        { "name": "new_version", "type": "u32" },
+        { "name": "x", "type": "[u8;32]" },
+        { "name": "y", "type": "[u8;32]" }
+      ]
+    }
+  ],
+  "errors": [
+    "Paused", "InvalidPublicInputCount", "ComplianceKeyStale", "StaleRoot",
+    "NullifierSpent", "InvalidProof", "InvalidLeaf", "AmountMismatch",
+    "AssetMismatch", "AssetCollision", "RecipientMismatch", "IntentHashNotZero",
+    "UnsupportedMint", "VerifierUnset"
+  ],
+  "errorEncoding": "ProgramError::Custom(n) where n is the 0-based index into the `errors` array above (see programs/kakure_pool/src/error.rs PoolError enum, which is declared in this exact order)."
+}

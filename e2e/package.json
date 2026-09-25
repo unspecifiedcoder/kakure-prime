@@ -1,0 +1,26 @@
+{
+  "name": "@kakure/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "author": "kakure",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@aztec/foundation": "2.1.11",
+    "@kakure/sdk": "workspace:*",
+    "@kakure/prover": "workspace:*",
+    "@kakure/cli": "workspace:*",
+    "@noble/curves": "^1.0.0",
+    "@solana/spl-token": "^0.4.15",
+    "@solana/web3.js": "^1.98.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

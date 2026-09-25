@@ -1,0 +1,324 @@
+mod mutation_tests;
+
+use ::ecdh::Point;
+use ::shared::{conservation, mint, open_multisig_note, TREE_DEPTH};
+use ::shared::frost::{msg_transfer, verify_frost_spend};
+use ::shared::note::{assert_parents_bound, Note, PARENTS_HIDDEN};
+use ::shared::test_fixtures::{FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y};
+
+fn main(
+    compliance_pubkey_x: pub Field,
+    compliance_pubkey_y: pub Field,
+    gpk: Point,
+    frost_r: Point,
+    frost_z: Field,
+    recipient_spend_pub: Point,
+    recipient_view_pub: Point,
+    old_note: Note,
+    old_note_index: Field,
+    old_note_path: [Field; TREE_DEPTH],
+    memo_note: Note,
+    memo_eph: Field,
+    change_note: Note,
+    change_eph: Field,
+) -> pub (Field, Field, Field, Field, Field, Field, [Field; 7], Field, Field, [Field; 7]) {
+    let compliance_pk = Point { x: compliance_pubkey_x, y: compliance_pubkey_y };
+    mint::assert_valid_compliance_pk(compliance_pk);
+
+    let (nullifier, computed_root) =
+        open_multisig_note(old_note, gpk, old_note_index, old_note_path);
+
+    assert(old_note.asset_id == memo_note.asset_id, "memo asset mismatch");
+    assert(old_note.asset_id == change_note.asset_id, "change asset mismatch");
+    assert(memo_eph != change_eph, "ephemerals must be distinct");
+    conservation::assert_conserved([old_note.value], [memo_note.value, change_note.value], 0);
+    assert(memo_note.parents == PARENTS_HIDDEN, "memo parents must be hidden sentinel");
+    assert_parents_bound(change_note, [old_note_index, 0]);
+
+    let memo = mint::mint_incoming_note(
+        memo_note,
+        memo_eph,
+        compliance_pk,
+        recipient_spend_pub,
+        recipient_view_pub,
+    );
+    let change = mint::mint_self_note_multisig(change_note, change_eph, compliance_pk, gpk);
+
+    let m = msg_transfer(
+        computed_root,
+        nullifier,
+        memo.leaf,
+        memo.tag,
+        change.leaf,
+        old_note.asset_id,
+    );
+    verify_frost_spend(gpk, frost_r, frost_z, m);
+
+    (
+        nullifier, computed_root, memo.leaf, memo.eph_pub.x, memo.tag, memo.cek_wrap,
+        memo.ciphertext, change.leaf, change.eph_pub.x, change.ciphertext,
+    )
+}
+
+global CX: Field = FIXTURE_COMPLIANCE_X;
+global CY: Field = FIXTURE_COMPLIANCE_Y;
+global ASSET_ID: Field = 0x1234567890123456789012345678901234567890;
+
+fn kat_gpk() -> Point {
+    Point {
+        x: 0x2546ab52faee9ab8ead1ad868567473b9757c6456c137274b12a5c51330d764d,
+        y: 0x0d7a564269d3675f75799ee9d7574b00d01190b243041994c0e460af507a71aa,
+    }
+}
+
+fn gpk_owner() -> Field {
+    let g = kat_gpk();
+    poseidon::poseidon2::Poseidon2::hash([g.x, g.y], 2)
+}
+
+fn dummy_r() -> Point {
+    Point {
+        x: 0x262d28e21d283e57d8add3efde5b0ef36d18af221efa12d686b50fdae23c0b53,
+        y: 0x20dba1d0aa62eab7f32a1a9eb2f4cb382080c3ea369f7422f9e27c075b9db09d,
+    }
+}
+
+fn ms_input(value: u128) -> Note {
+    Note {
+        note_version: 1,
+        asset_id: ASSET_ID,
+        note_type: 1,
+        conditions_hash: 0,
+        value,
+        owner: gpk_owner(),
+        psi: 0x0981a88f9e119b057498a4ab99ed5379a1ea91c642454fc0c07aacc1f5cd5731,
+        parents: 0,
+    }
+}
+
+fn recipient_in_pub() -> Point {
+    Point {
+        x: 0x1b16e357953d68d73398c838aa883cc65ddae2aef75a4bc437e4232afdbe43c8,
+        y: 0x02d7ee0be055310d2895c5ed5090a8aa1c700e73c64294f1e817ec77f46b4fdc,
+    }
+}
+
+fn memo_note(note_type: Field) -> Note {
+    Note {
+        note_version: 1,
+        asset_id: ASSET_ID,
+        note_type,
+        conditions_hash: 0,
+        value: 40,
+        owner: 0x1113074e2fb269d979ad2b64e6fe70b1967c67b007b706600603b847306aefe3,
+        psi: KAT_MEMO_PSI,
+        parents: 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000,
+    }
+}
+
+fn change_note(note_type: Field, owner: Field) -> Note {
+    Note {
+        note_version: 1,
+        asset_id: ASSET_ID,
+        note_type,
+        conditions_hash: 0,
+        value: 60,
+        owner,
+        psi: 0x0b78b93ec011fe550e1f125af7f7fa286a69a839cca56d248fa04abfe9312f7b,
+        parents: 0,
+    }
+}
+
+#[test(should_fail_with = "multisig change/self must be owned by the account gpk")]
+fn audit_reject_off_gpk_change_owner() {
+    let _ = main(
+        CX,
+        CY,
+        kat_gpk(),
+        dummy_r(),
+        1,
+        recipient_in_pub(),
+        recipient_in_pub(),
+        ms_input(100),
+        0,
+        [0; TREE_DEPTH],
+        memo_note(0),
+        4,
+        change_note(1, gpk_owner() + 1),
+        9,
+    );
+}
+
+#[test(should_fail_with = "incoming memo note_type must be STANDARD or MULTISIG")]
+fn audit_reject_out_note_type_2() {
+    let _ = main(
+        CX,
+        CY,
+        kat_gpk(),
+        dummy_r(),
+        1,
+        recipient_in_pub(),
+        recipient_in_pub(),
+        ms_input(100),
+        0,
+        [0; TREE_DEPTH],
+        memo_note(2),
+        4,
+        change_note(1, gpk_owner()),
+        9,
+    );
+}
+
+#[test(should_fail_with = "multisig self note must be MULTISIG")]
+fn audit_reject_out_note_type_standard() {
+    let _ = main(
+        CX,
+        CY,
+        kat_gpk(),
+        dummy_r(),
+        1,
+        recipient_in_pub(),
+        recipient_in_pub(),
+        ms_input(100),
+        0,
+        [0; TREE_DEPTH],
+        memo_note(0),
+        4,
+        change_note(0, gpk_owner()),
+        9,
+    );
+}
+
+// Real 3-of-5 FROST witness from the TS signer (gen-transfer-multisig-kat); accept parity.
+// regenerated for kakure.* domains (circuits/scripts/gen_frost_kats.ts)
+global KAT_MEMO_EPH: Field = 4;
+global KAT_CHANGE_EPH: Field = 5;
+global KAT_MEMO_PSI: Field = 0x2d968b4ef3090d631f98d339ca1aad9241cd14f7a3a584983662760630b8db2e;
+global KAT_CHANGE_PSI: Field = 0x1a72e6c3463dd2509150c482ad772ede1290d453977279eed05f10ae8cbd75f0;
+global KAT_FROST_Z: Field = 0x04ff02bb111b27461ff96210e331fc5be63f4fd36ea24dce0a77da9c4ed923c8;
+
+fn kat_frost_r() -> Point {
+    Point {
+        x: 0x24e57b1f9a6718f1f762d44405f35a6b7069a324020ac2aa0640271d488fc864,
+        y: 0x2634e350fcead5983008f940bc8956cd62adba8c81816ded57f5fba8306bfd87,
+    }
+}
+
+fn kat_memo_note(value: u128) -> Note {
+    Note {
+        note_version: 1,
+        asset_id: ASSET_ID,
+        note_type: 0,
+        conditions_hash: 0,
+        value,
+        owner: 0x1113074e2fb269d979ad2b64e6fe70b1967c67b007b706600603b847306aefe3,
+        psi: KAT_MEMO_PSI,
+        parents: 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000,
+    }
+}
+
+fn kat_change_note(value: u128) -> Note {
+    Note {
+        note_version: 1,
+        asset_id: ASSET_ID,
+        note_type: 1,
+        conditions_hash: 0,
+        value,
+        owner: gpk_owner(),
+        psi: KAT_CHANGE_PSI,
+        parents: 0,
+    }
+}
+
+#[test]
+fn kat_multisig_transfer_accepts() {
+    let _ = main(
+        CX,
+        CY,
+        kat_gpk(),
+        kat_frost_r(),
+        KAT_FROST_Z,
+        recipient_in_pub(),
+        recipient_in_pub(),
+        ms_input(100),
+        0,
+        [0; TREE_DEPTH],
+        kat_memo_note(40),
+        KAT_MEMO_EPH,
+        kat_change_note(60),
+        KAT_CHANGE_EPH,
+    );
+}
+
+// Second 3-of-5 witness, re-signed over the MULTISIG-memo leaf; recipient spend and view keys are
+// decoupled. regenerated for kakure.* domains (circuits/scripts/gen_frost_kats.ts)
+global KAT_MS_MEMO_FROST_Z: Field =
+    0x053e6cee648ff05f20a15c59e26ffc9bf2fb8f4da4fb266feb18ca5bc992e05d;
+
+fn kat_ms_memo_frost_r() -> Point {
+    Point {
+        x: 0x19e4954d49f78fa903a0f3f6c1ab77fd3bc10b01f9386548067a43baecc3b54e,
+        y: 0x10d4661035003fc6c9142fa29199f95ba3988ba8344b3748785600e2cdbd02a5,
+    }
+}
+
+fn recipient_spend_pub() -> Point {
+    Point {
+        x: 0x2c6bfc7fe056ed38e26ec136ec8aec5f63ecc4b52c44afba967649cf1e6e2311,
+        y: 0x1ac7675df6265f6e12d1c79a2b3b6658a0d46a320fba497ad0b817f9b19e0f21,
+    }
+}
+
+fn kat_ms_memo_note() -> Note {
+    Note {
+        note_version: 1,
+        asset_id: ASSET_ID,
+        note_type: 1,
+        conditions_hash: 0,
+        value: 40,
+        owner: 0x07dc9f016dede5a174d347724b643ecd7f4f34dd928715592162bd4f5814a685,
+        psi: KAT_MEMO_PSI,
+        parents: 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000,
+    }
+}
+
+#[test]
+fn kat_multisig_memo_transfer_accepts() {
+    let _ = main(
+        CX,
+        CY,
+        kat_gpk(),
+        kat_ms_memo_frost_r(),
+        KAT_MS_MEMO_FROST_Z,
+        recipient_spend_pub(),
+        recipient_in_pub(),
+        ms_input(100),
+        0,
+        [0; TREE_DEPTH],
+        kat_ms_memo_note(),
+        KAT_MEMO_EPH,
+        kat_change_note(60),
+        KAT_CHANGE_EPH,
+    );
+}
+
+// value swap keeps conservation (41+59==100) but shifts the signed leaves -> FROST rejects
+#[test(should_fail_with = "FROST signature invalid")]
+fn audit_reject_mutated_signed_value() {
+    let _ = main(
+        CX,
+        CY,
+        kat_gpk(),
+        kat_frost_r(),
+        KAT_FROST_Z,
+        recipient_in_pub(),
+        recipient_in_pub(),
+        ms_input(100),
+        0,
+        [0; TREE_DEPTH],
+        kat_memo_note(41),
+        KAT_MEMO_EPH,
+        kat_change_note(59),
+        KAT_CHANGE_EPH,
+    );
+}

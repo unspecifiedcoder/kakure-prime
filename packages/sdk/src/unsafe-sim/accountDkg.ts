@@ -1,0 +1,99 @@
+// SIMULATED FROST multisig account ceremony. Builds all n shares + v in ONE process: TEST/DEV ONLY, MUST NOT ship.
+
+import { Fr } from "@aztec/foundation/fields";
+import { deriveGroupViewKey } from "../frost/groupViewKey.js";
+import type { IDarkAccount } from "../interfaces.js";
+import { Point, scalarBaseMul, modSub, randScalar } from "../tss/bjj.js";
+import { poseidon2 } from "../tss/hashToScalar.js";
+import { Poseidon } from "../crypto/Poseidon.js";
+import { isEvenY } from "../note/keys.js";
+import { runDkg } from "./dkg.js";
+import type { DkgResult } from "../tss/dkg.js";
+
+// V.x is the discovery tag, so V must be even-y; v is a fixed sum, so the reveal round re-runs until it is.
+const MAX_VIEWKEY_ROUNDS = 256;
+
+export interface FrostAccount {
+  gpk: Point;
+  shares: Map<bigint, bigint>;
+  verificationKeys: Map<bigint, Point>;
+  viewKey: bigint;
+  viewPub: Point;
+  owner: Fr;
+  qual: bigint[];
+}
+
+interface ViewContribution {
+  id: bigint;
+  commit: bigint;
+  vi: bigint;
+  blind: bigint;
+}
+
+// LEGACY, retained only for the simulation call sites that predate the derived path. It produces a `v`
+// that no seed reproduces, which is why a group that lost it could never recover. Production derives from
+// the creator (see `deriveGroupViewKey`); do not extend this.
+async function revealRound(
+  participants: bigint[],
+): Promise<{ v: bigint; V: Point }> {
+  const contributions: ViewContribution[] = [];
+  for (const id of participants) {
+    const vi = randScalar();
+    const blind = randScalar();
+    const commit = await poseidon2([vi, blind]);
+    contributions.push({ id, commit, vi, blind });
+  }
+  let v = 0n;
+  for (const c of contributions) {
+    const check = await poseidon2([c.vi, c.blind]);
+    if (check !== c.commit)
+      throw new Error(`view-key: bad reveal from member ${c.id}`);
+    v = modSub(v + c.vi);
+  }
+  return { v, V: scalarBaseMul(v) };
+}
+
+async function establishViewKey(
+  participants: bigint[],
+): Promise<{ v: bigint; V: Point }> {
+  for (let round = 0; round < MAX_VIEWKEY_ROUNDS; round++) {
+    const { v, V } = await revealRound(participants);
+    if (isEvenY(V)) return { v, V };
+  }
+  throw new Error(
+    `view-key: no even-y V within ${MAX_VIEWKEY_ROUNDS} reveal rounds`,
+  );
+}
+
+/**
+ * @param creator when supplied, the group view key is DERIVED from that account and `gpk` rather than
+ * sampled, so the creator can recompute it from their seed alone. Omitting it keeps the contributory
+ * reveal round, which reproduces nothing and is retained only for the existing simulation call sites.
+ */
+export async function frostAccountDkg(
+  n: number,
+  t: number,
+  context: bigint,
+  creator?: IDarkAccount,
+): Promise<FrostAccount> {
+  const dkg: DkgResult = await runDkg(n, t, context);
+  const participants = [...dkg.shares.keys()];
+  // FrostAccount carries the view key as a bigint; the derived path returns an Fr, so narrow at the seam
+  // rather than widening a type that 18 simulation call sites depend on.
+  const { v, V } = creator
+    ? await deriveGroupViewKey(creator, dkg.C).then((k) => ({
+        v: k.v.toBigInt(),
+        V: k.V,
+      }))
+    : await establishViewKey(participants);
+  const owner = await Poseidon.hash([new Fr(dkg.C[0]), new Fr(dkg.C[1])]);
+  return {
+    gpk: dkg.C,
+    shares: dkg.shares,
+    verificationKeys: dkg.V,
+    viewKey: v,
+    viewPub: V,
+    owner,
+    qual: dkg.qual,
+  };
+}

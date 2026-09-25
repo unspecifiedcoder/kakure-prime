@@ -1,0 +1,44 @@
+{
+  "_comment": "Indexer-schema IDL (packages/indexer/src/events/idl.ts's KakurePoolIdl shape -- events:[{name}], types:[{name,type:{kind,fields}}]), NOT the human-readable doc IDL at packages/sdk/src/solana/idl/kakure_pool.json (different, incompatible shape). Kept in sync with packages/indexer/src/events/idl.ts's DEFAULT_KAKURE_POOL_IDL and programs/kakure_pool/src/events.rs.",
+  "events": [
+    { "name": "NoteInserted" },
+    { "name": "NullifierSpent" },
+    { "name": "ComplianceKeyRotated" }
+  ],
+  "types": [
+    {
+      "name": "NoteInserted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "leaf_index", "type": "u64" },
+          { "name": "leaf", "type": { "array": ["u8", 32] } },
+          { "name": "eph_pub_x", "type": { "array": ["u8", 32] } },
+          { "name": "tag", "type": { "option": { "array": ["u8", 32] } } },
+          { "name": "cek_wrap", "type": { "option": { "array": ["u8", 32] } } },
+          { "name": "ciphertext", "type": { "array": [{ "array": ["u8", 32] }, 7] } },
+          { "name": "root", "type": { "array": ["u8", 32] } }
+        ]
+      }
+    },
+    {
+      "name": "NullifierSpent",
+      "type": {
+        "kind": "struct",
+        "fields": [{ "name": "nullifier", "type": { "array": ["u8", 32] } }]
+      }
+    },
+    {
+      "name": "ComplianceKeyRotated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "old_version", "type": "u32" },
+          { "name": "new_version", "type": "u32" },
+          { "name": "x", "type": { "array": ["u8", 32] } },
+          { "name": "y", "type": { "array": ["u8", 32] } }
+        ]
+      }
+    }
+  ]
+}

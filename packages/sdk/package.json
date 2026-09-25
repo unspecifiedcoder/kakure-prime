@@ -1,0 +1,72 @@
+{
+  "name": "@kakure/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./frost": {
+      "types": "./dist/frost/index.d.ts",
+      "import": "./dist/frost/index.js",
+      "require": "./dist/frost/index.cjs"
+    },
+    "./tss": {
+      "types": "./dist/tss/index.d.ts",
+      "import": "./dist/tss/index.js",
+      "require": "./dist/tss/index.cjs"
+    },
+    "./tx": {
+      "types": "./dist/tx/index.d.ts",
+      "import": "./dist/tx/index.js",
+      "require": "./dist/tx/index.cjs"
+    },
+    "./threshold": {
+      "types": "./dist/threshold/index.d.ts",
+      "import": "./dist/threshold/index.js",
+      "require": "./dist/threshold/index.cjs"
+    },
+    "./solana": {
+      "types": "./dist/solana/index.d.ts",
+      "import": "./dist/solana/index.js",
+      "require": "./dist/solana/index.cjs"
+    },
+    "./unsafe-sim": {
+      "types": "./dist/unsafe-sim/index.d.ts",
+      "import": "./dist/unsafe-sim/index.js",
+      "require": "./dist/unsafe-sim/index.cjs"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
+  },
+  "author": "kakure",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  },
+  "dependencies": {
+    "@aztec/foundation": "2.1.11",
+    "@coral-xyz/anchor": "^0.31.1",
+    "@noble/curves": "1.9.1",
+    "@noble/hashes": "^1.5.0",
+    "@solana/web3.js": "^1.98.0",
+    "@zk-kit/baby-jubjub": "^1.0.3",
+    "@zk-kit/utils": "^1.4.1",
+    "bs58check": "^4.0.0",
+    "circomlibjs": "^0.1.7"
+  }
+}

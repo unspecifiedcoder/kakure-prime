@@ -1,0 +1,111 @@
+use shared::mutation;
+use shared::note::Note;
+use shared::SUBORDER;
+use shared::test_fixtures::{FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, fixture_note};
+
+// eph=5 derives an even-y eph_pub, which the deposit discovery-tag guard requires.
+global EPH: Field = 5;
+
+fn note0() -> Note {
+    fixture_note()
+}
+
+fn run(cx: Field, cy: Field, note: Note, eph: Field) {
+    let _ = super::main(cx, cy, note, eph);
+}
+
+fn valid() {
+    run(FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, note0(), EPH);
+}
+
+#[test]
+fn m_valid_accepts() {
+    valid();
+}
+
+#[test(should_fail_with = "compliance key must not be the identity")]
+fn m_compliance_identity() {
+    let p = mutation::bad_identity();
+    run(p.x, p.y, note0(), EPH);
+}
+#[test(should_fail)]
+fn m_compliance_off_curve() {
+    let p = mutation::bad_off_curve();
+    run(p.x, p.y, note0(), EPH);
+}
+#[test(should_fail_with = "compliance key not in prime-order subgroup")]
+fn m_compliance_small_order() {
+    let p = mutation::bad_small_order();
+    run(p.x, p.y, note0(), EPH);
+}
+#[test(should_fail_with = "compliance key not in prime-order subgroup")]
+fn m_compliance_non_subgroup() {
+    let p = mutation::bad_non_subgroup();
+    run(p.x, p.y, note0(), EPH);
+}
+
+#[test(should_fail_with = "note owner must be non-zero")]
+fn m_owner_zero() {
+    let mut note = note0();
+    note.owner = 0;
+    run(FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, note, EPH);
+}
+#[test(should_fail_with = "unexpected note version")]
+fn m_note_version() {
+    let mut note = note0();
+    note.note_version = 2;
+    run(FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, note, EPH);
+}
+#[test(should_fail_with = "note_type not in {STANDARD, MULTISIG}")]
+fn m_note_type_conditional() {
+    let mut note = note0();
+    note.note_type = 2;
+    run(FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, note, EPH);
+}
+#[test(should_fail_with = "note conditions_hash must be zero")]
+fn m_conditions_hash() {
+    let mut note = note0();
+    note.conditions_hash = 1;
+    run(FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, note, EPH);
+}
+#[test(should_fail_with = "psi not bound to CEK")]
+fn m_psi_unbound() {
+    let mut note = note0();
+    note.psi = note.psi + 1;
+    run(FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, note, EPH);
+}
+#[test(should_fail)]
+fn m_asset_invalid() {
+    let mut note = note0();
+    note.asset_id = 0x010000000000000000000000000000000000000000;
+    run(FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, note, EPH);
+}
+#[test(should_fail_with = "deposit output parents must be zero")]
+fn m_parents_nonzero() {
+    let mut note = note0();
+    note.parents = 1;
+    run(FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, note, EPH);
+}
+
+#[test(should_fail_with = "scalar must be non-zero")]
+fn m_eph_zero() {
+    run(FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, note0(), 0);
+}
+#[test(should_fail_with = "scalar not in BabyJubJub prime-order subgroup")]
+fn m_eph_ge_suborder() {
+    run(
+        FIXTURE_COMPLIANCE_X,
+        FIXTURE_COMPLIANCE_Y,
+        note0(),
+        SUBORDER,
+    );
+}
+
+// psi rebound to eph=6's CEK so the psi guard passes and the even-y guard is the one that fires.
+// regenerated for kakure.* domains: must equal note_nullifier::psi(derive_cek(6, compliance_pk)).
+#[test(should_fail_with = "deposit discovery tag must be even-y")]
+fn m_odd_y_deposit_eph() {
+    let mut note = note0();
+    note.psi = 0x1ed95349b4e39398283f6f93d1770fc3f555c8a4f803746302dd44ec437cad2a;
+    run(FIXTURE_COMPLIANCE_X, FIXTURE_COMPLIANCE_Y, note, 6);
+}
