@@ -57,5 +57,6 @@ Kakure Prime transparently builds on Kakure, an Apache-2.0 project by the same a
 Pre-release, unaudited, and devnet/localnet only. The current trusted setup and demo verifier are not production-safe. Kakure Prime does not issue securities or provide investment advice.
 
 - **Demo:** https://kakure-prime.vercel.app/#/demo
+- **Pitch video:** https://kakure-prime.vercel.app/pitch-video.html
 - **Technical video:** https://kakure-prime.vercel.app/demo-video.html
 - **Source:** https://github.com/unspecifiedcoder/kakure-prime

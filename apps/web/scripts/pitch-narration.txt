@@ -1,0 +1,13 @@
+Tokenized equities can trade globally on Solana, but ordinary wallets publish a fund's entire book: positions, rebalances, recipients, and signer activity. Institutions protect that information everywhere else.
+
+Kakure Prime is confidential treasury and settlement for tokenized equities. A fund shields a position into a zero-knowledge note controlled by a three-of-five FROST quorum. There is no custodian and no shared private key.
+
+This is not a static sponsor mock. The private-market lane loads only official PreStocks assets, verifies each Token Twenty Twenty-Two mint on-chain, and applies a live token-to-mark mandate. Here, OpenAI trades too far from its mark, so settlement is blocked.
+
+For Apple xStock, Pyth price freshness and confidence form another hard gate. When authenticated market data is unavailable, Kakure fails closed instead of inventing a price.
+
+For an eligible Anthropic position, the quorum shields the asset, creates an encrypted proposal, collects three approvals, and produces the private settlement proof. Authorized signers see what they need. The public chain sees only a commitment, a spent nullifier, and a valid Groth Sixteen proof—not the ticker, amount, recipient, or signer graph.
+
+The settlement lifecycle connects to a real Meteora Dynamic Bonding Curve receipt market. Its fee decays from one percent to twenty-five basis points, graduates to DAMM version two, and already has a finalized devnet trade.
+
+Kakure Prime gives tokenized equities the missing institutional primitive: private operations, threshold governance, verifiable settlement, and selective auditability—built natively for Solana.
