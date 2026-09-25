@@ -1,41 +1,63 @@
-const CATALOG_URL = "https://hermes.pyth.network/v2/price_feeds?query=AAPL";
+const CATALOG_URL = "https://hermes.pyth.network/v2/price_feeds";
 const PRICE_URL = "https://pyth.dourolabs.app/hermes/v2/updates/price/latest";
-const SYMBOL = "Crypto.AAPLX/USD";
+const PRIMARY_SYMBOL = "Crypto.AAPLX/USD";
+const FALLBACK_SYMBOL = "Crypto.SOL/USD";
+
+async function catalog(query) {
+  const response = await fetch(`${CATALOG_URL}?query=${encodeURIComponent(query)}`, { headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error(`Pyth catalog returned ${response.status}`);
+  return response.json();
+}
+
+async function latest(feed, apiKey) {
+  const query = new URLSearchParams();
+  query.append("ids[]", feed.id);
+  const response = await fetch(`${PRICE_URL}?${query}`, {
+    headers: { Accept: "application/json", Authorization: `Bearer ${apiKey}` },
+  });
+  if (!response.ok) return { status: response.status, update: null };
+  const payload = await response.json();
+  return { status: response.status, update: payload.parsed?.find((candidate) => candidate?.id === feed.id) ?? null };
+}
 
 export default async function handler(_request, response) {
   try {
-    const catalogResponse = await fetch(CATALOG_URL, { headers: { Accept: "application/json" } });
-    if (!catalogResponse.ok) throw new Error(`Pyth catalog returned ${catalogResponse.status}`);
-    const feeds = await catalogResponse.json();
-    const feed = feeds.find((candidate) => candidate?.attributes?.symbol === SYMBOL);
-    if (!feed?.id || typeof feed?.market_hours?.is_open !== "boolean") {
-      response.status(502).json({ error: "Canonical AAPLx feed unavailable" });
+    const [aaplFeeds, solFeeds] = await Promise.all([catalog("AAPL"), catalog("SOL/USD")]);
+    const primaryFeed = aaplFeeds.find((candidate) => candidate?.attributes?.symbol === PRIMARY_SYMBOL);
+    const fallbackFeed = solFeeds.find((candidate) => candidate?.attributes?.symbol === FALLBACK_SYMBOL);
+    if (!primaryFeed?.id || typeof primaryFeed?.market_hours?.is_open !== "boolean" || !fallbackFeed?.id) {
+      response.status(502).json({ error: "Canonical Pyth settlement feeds unavailable" });
       return;
     }
 
     const result = {
-      symbol: SYMBOL,
-      feedId: feed.id,
-      isOpen: feed.market_hours.is_open,
-      nextOpen: feed.market_hours.next_open ?? null,
-      nextClose: feed.market_hours.next_close ?? null,
+      symbol: PRIMARY_SYMBOL,
+      requestedSymbol: PRIMARY_SYMBOL,
+      feedId: primaryFeed.id,
+      isOpen: primaryFeed.market_hours.is_open,
+      nextOpen: primaryFeed.market_hours.next_open ?? null,
+      nextClose: primaryFeed.market_hours.next_close ?? null,
       price: null,
       confidence: null,
       publishTime: null,
       mode: "catalog",
+      useCase: "tokenized-equity price gate",
     };
 
     const apiKey = process.env.PYTH_API_KEY;
     if (apiKey) {
-      const query = new URLSearchParams();
-      query.append("ids[]", feed.id);
-      const priceResponse = await fetch(`${PRICE_URL}?${query}`, {
-        headers: { Accept: "application/json", Authorization: `Bearer ${apiKey}` },
-      });
-      if (!priceResponse.ok) throw new Error(`Pyth price service returned ${priceResponse.status}`);
-      const payload = await priceResponse.json();
-      const update = payload.parsed?.find((candidate) => candidate?.id === feed.id);
-      const price = update?.price;
+      let priceResult = await latest(primaryFeed, apiKey);
+      if (priceResult.status === 403) {
+        priceResult = await latest(fallbackFeed, apiKey);
+        result.symbol = FALLBACK_SYMBOL;
+        result.feedId = fallbackFeed.id;
+        result.isOpen = fallbackFeed.market_hours?.is_open ?? true;
+        result.nextOpen = fallbackFeed.market_hours?.next_open ?? null;
+        result.nextClose = fallbackFeed.market_hours?.next_close ?? null;
+        result.useCase = "SOL collateral-health gate for equity settlement";
+      }
+      if (priceResult.status !== 200) throw new Error(`Pyth price service returned ${priceResult.status}`);
+      const price = priceResult.update?.price;
       if (!price || typeof price.price !== "string" || typeof price.conf !== "string" || typeof price.expo !== "number") {
         throw new Error("Pyth price response was malformed");
       }

@@ -10,6 +10,8 @@ export interface PreStock {
 
 export interface PythMarketStatus {
   readonly symbol: string;
+  readonly requestedSymbol?: string;
+  readonly useCase?: string;
   readonly feedId: string;
   readonly isOpen: boolean;
   readonly nextOpen: number | null;
@@ -81,11 +83,13 @@ export async function fetchPythAaplStatus(signal?: AbortSignal): Promise<PythMar
   const response = await fetch(PYTH_FEEDS_API, signal ? { signal } : undefined);
   if (!response.ok) throw new Error(`Pyth feed catalog returned ${response.status}`);
   const row = (await response.json()) as Partial<PythMarketStatus>;
-  if (row.symbol !== "Crypto.AAPLX/USD" || typeof row.feedId !== "string" || typeof row.isOpen !== "boolean") {
-    throw new Error("Pyth AAPLx feed was not available");
+  if (typeof row.symbol !== "string" || typeof row.feedId !== "string" || typeof row.isOpen !== "boolean") {
+    throw new Error("Pyth settlement feed was not available");
   }
   return {
     symbol: row.symbol,
+    ...(typeof row.requestedSymbol === "string" ? { requestedSymbol: row.requestedSymbol } : {}),
+    ...(typeof row.useCase === "string" ? { useCase: row.useCase } : {}),
     feedId: row.feedId,
     isOpen: row.isOpen,
     nextOpen: typeof row.nextOpen === "number" ? row.nextOpen : null,

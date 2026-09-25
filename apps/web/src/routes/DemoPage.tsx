@@ -114,8 +114,8 @@ export function DemoPage(): JSX.Element {
         </article>
         <article data-state={pythGate?.passed ? "pass" : pyth ? "ready" : "loading"}>
           <div><span>02 · PYTH</span><b>{pythGate?.passed ? "RISK PASS" : pyth ? "BROKER READY" : "VERIFYING"}</b></div>
-          <h2>AAPLx settlement risk gate</h2>
-          <p>{pyth?.price !== null && pyth?.price !== undefined ? `$${pyth.price.toFixed(2)} · ${pythGate?.confidenceBps?.toFixed(1)} bps confidence · ${pythGate?.ageSeconds}s old` : pythGate?.reason ?? "Discovering the canonical feed…"}</p>
+          <h2>Pyth settlement risk gate</h2>
+          <p>{pyth?.price !== null && pyth?.price !== undefined ? `${pyth.symbol} · $${pyth.price.toFixed(2)} · ${pythGate?.confidenceBps?.toFixed(1)} bps confidence · ${pythGate?.ageSeconds}s old` : pythGate?.reason ?? "Discovering the canonical feed…"}</p>
           {pyth && <a href={`https://insights.pyth.network/price-feeds/${pyth.feedId}`} target="_blank" rel="noreferrer">Feed {shorten(pyth.feedId)} ↗</a>}
         </article>
         <article data-state={meteora?.verified ? "pass" : "loading"}>
@@ -138,7 +138,7 @@ export function DemoPage(): JSX.Element {
             <label htmlFor="demo-lane">Settlement policy lane</label>
             <select id="demo-lane" value={lane} onChange={(event) => { setLane(event.target.value as "prestocks" | "aaplx"); setStep(0); }}>
               <option value="prestocks">PreStocks · official-only NAV guard</option>
-              <option value="aaplx">AAPLx · Pyth price risk gate</option>
+              <option value="aaplx">AAPLx · Pyth live market-risk gate</option>
             </select>
             {lane === "prestocks" && <>
               <label htmlFor="demo-asset">Official PreStocks asset</label>

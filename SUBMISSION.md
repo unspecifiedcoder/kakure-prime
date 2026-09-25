@@ -19,12 +19,13 @@ The guided clicks are simulated for accessibility. The repository separately con
 - Live token price and mark price feed a ±15% mandate. Assets outside the mandate are blocked before shielding.
 - Judges can inspect the selected official mint directly from the demo.
 
-### Pyth — price-risk enforcement, not decoration
+### Pyth — market-risk enforcement, not decoration
 
 - Kakure discovers the canonical `Crypto.AAPLX/USD` feed.
-- When a Pyth Pro key is configured, the server broker retrieves price, confidence, and publication time without exposing the key to the browser.
-- AAPLx settlement is blocked when the price is older than 30 seconds or confidence exceeds 100 bps.
-- The judge UI exposes both the decision and the underlying feed ID.
+- The authenticated server broker retrieves price, confidence, and publication time without exposing the key to the browser.
+- Kakure discovers `Crypto.AAPLX/USD`; because the free trial does not entitle that feed, production transparently uses live `Crypto.SOL/USD` as a cross-market collateral-health gate.
+- Equity settlement is blocked when the active price is older than 30 seconds or confidence exceeds 100 bps.
+- The judge UI exposes the active symbol, decision, and feed ID—never a fabricated AAPLx price.
 
 ### Meteora DBC — a traded shielded-equity receipt
 
