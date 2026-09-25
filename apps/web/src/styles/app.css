@@ -205,6 +205,7 @@ summary { cursor: pointer; color: var(--ink-2); font-weight: 600; }
 .demo-ledger dd { margin: 0; font-weight: 650; text-align: right; }
 .demo-action { width: 100%; justify-content: space-between; display: flex; margin-top: 1.5rem; }
 .demo-success { margin: .9rem 0 0; color: var(--teal); font-weight: 650; }
+.demo-blocked { margin: .9rem 0 0; color: var(--amber); font-size: .82rem; font-weight: 650; }
 .demo-visibility { display: grid; grid-template-rows: 1fr 1fr; }
 .demo-visibility article { padding: 1.5rem; }
 .observer-panel { background: #101613; color: #8c9990; display: grid; gap: .6rem; }
@@ -234,8 +235,17 @@ summary { cursor: pointer; color: var(--ink-2); font-weight: 600; }
 .demo-proof-stack { display: flex; flex-wrap: wrap; justify-content: center; gap: .65rem 1rem; padding: 1.25rem; background: #101613; color: #e5eee8; font: 650 .78rem/1 var(--mono); }
 .demo-proof-stack b { color: #65d399; }
 .demo-footnote { max-width: 74rem; margin: 0 auto; text-align: center; font-size: .86rem; }
+.integration-evidence { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; padding: 1px; background: var(--rule); border: 1px solid var(--rule); }
+.integration-evidence article { min-width: 0; padding: 1.15rem; background: var(--surface); }
+.integration-evidence article > div { display: flex; justify-content: space-between; gap: .75rem; margin-bottom: .8rem; font: 700 .66rem/1.2 var(--mono); letter-spacing: .08em; }
+.integration-evidence article > div span { color: var(--ink-3); }
+.integration-evidence article > div b { color: var(--amber); }
+.integration-evidence article[data-state="pass"] > div b { color: var(--teal); }
+.integration-evidence article h2 { font-size: 1rem; }
+.integration-evidence article p { min-height: 3.1rem; margin-bottom: .7rem; font-size: .8rem; }
+.integration-evidence article a { display: block; overflow: hidden; color: var(--teal); font: 650 .72rem/1.4 var(--mono); text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 52rem) {
-  .demo-hero, .demo-workspace { grid-template-columns: 1fr; }
+  .demo-hero, .demo-workspace, .integration-evidence { grid-template-columns: 1fr; }
   .demo-progress { display: none; }
   .demo-operation { border-right: 0; border-bottom: 1px solid var(--rule); }
   .demo-timeline { grid-template-columns: 1fr; }

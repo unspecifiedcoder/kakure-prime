@@ -9,6 +9,21 @@ Kakure Prime lets a fund, DAO, or global team custody and distribute tokenized s
 
 ---
 
+## Judge start here
+
+- **60-second guided demo:** <https://kakure-prime.vercel.app/#/demo>
+- **PreStocks:** official API is the private-market allowlist; contract format and a ±15% token-to-mark mandate are enforced before the guided settlement can advance.
+- **Pyth:** the canonical `Crypto.AAPLX/USD` feed is discovered and a server-side Pyth Pro broker evaluates freshness (≤30 seconds) and confidence (≤100 bps). The browser never receives the API key.
+- **Meteora DBC:** a real devnet equity-receipt curve was created with the official SDK and traded on-chain. [Pool](https://explorer.solana.com/address/58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW?cluster=devnet) · [finalized trade](https://explorer.solana.com/tx/57ro5JMwkSZaMM15DjBrCXkUoxKtVvfRkJbYAVRHZzz6TKGdTivqKvDiLsGh22FroEBBbXrdQzjuRw6Cr368y1to?cluster=devnet)
+
+The hosted Pyth price rail requires a server-only `PYTH_API_KEY`. Without it, the application still verifies the canonical feed catalog but deliberately fails the price-risk gate instead of using stale or invented data.
+
+### What was built for Stocklana
+
+The privacy protocol predates the event and is disclosed below. The hackathon work is the Token-2022 equity compatibility layer, verified xStocks presets, official-only PreStocks policy rail, Pyth settlement-risk gate and server broker, Meteora DBC receipt/config/pool/trade, hosted judge experience, and reproducible devnet evidence.
+
+---
+
 ## Why
 
 Every treasury on Solana today is public. A DAO that pays 50 contributors publishes 50 salaries; a fund that rebalances publishes its book. Multisigs add safety, not privacy — the signer set, the threshold and every payment are on-chain for anyone to read.
@@ -75,8 +90,8 @@ flowchart LR
 Prerequisites: Linux x86_64 (or WSL2), ~8 GB RAM, ~5 GB disk.
 
 ```bash
-git clone https://github.com/unspecifiedcoder/kakure.git
-cd kakure
+git clone https://github.com/unspecifiedcoder/kakure-prime.git
+cd kakure-prime
 bash scripts/bootstrap.sh      # toolchain (Noir, Sunspot, Solana, Go, Rust, Node) + prebuilt artifacts
 
 just e2e-scenario              # full protocol on a local validator (≈3 min)

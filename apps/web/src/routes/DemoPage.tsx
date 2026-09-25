@@ -1,9 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchPreStocks, fetchPythAaplStatus, navPremium, type PreStock, type PythMarketStatus } from "../lib/sponsorData.js";
+import {
+  fetchMeteoraEvidence,
+  fetchPreStocks,
+  fetchPythAaplStatus,
+  navPremium,
+  preStockRisk,
+  pythRisk,
+  type MeteoraEvidence,
+  type PreStock,
+  type PythMarketStatus,
+} from "../lib/sponsorData.js";
 
 const METEORA_DBC_POOL = "58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW";
 const METEORA_EXPLORER_URL = `https://explorer.solana.com/address/${METEORA_DBC_POOL}?cluster=devnet`;
+const transactionUrl = (signature: string): string => `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+const shorten = (value: string): string => `${value.slice(0, 5)}…${value.slice(-5)}`;
 
 const STEPS = [
   {
@@ -40,19 +52,26 @@ const STEPS = [
 
 export function DemoPage(): JSX.Element {
   const [step, setStep] = useState(0);
+  const [lane, setLane] = useState<"prestocks" | "aaplx">("prestocks");
   const [preStocks, setPreStocks] = useState<PreStock[]>([]);
   const [selectedSymbol, setSelectedSymbol] = useState("ANTHROPIC");
   const [pyth, setPyth] = useState<PythMarketStatus | null>(null);
+  const [meteora, setMeteora] = useState<MeteoraEvidence | null>(null);
   const current = STEPS[step]!;
   const isFinal = step === STEPS.length - 1;
   const selected = useMemo(() => preStocks.find((stock) => stock.symbol === selectedSymbol), [preStocks, selectedSymbol]);
-  const asset = selected?.symbol ?? "AAPLx";
-  const assetName = selected?.name ?? "Apple xStock";
+  const preStocksGate = selected ? preStockRisk(selected) : null;
+  const pythGate = pyth ? pythRisk(pyth) : null;
+  const asset = lane === "aaplx" ? "AAPLx" : selected?.symbol ?? "AAPLx";
+  const assetName = lane === "aaplx" ? "Apple xStock" : selected?.name ?? "Apple xStock";
+  const activeGatePassed = lane === "aaplx" ? pythGate?.passed === true : preStocksGate?.passed !== false;
+  const activePolicy = lane === "aaplx" ? pythGate?.reason ?? "Verifying Pyth price" : preStocksGate?.reason ?? "Verifying official asset";
 
   useEffect(() => {
     const controller = new AbortController();
     void fetchPreStocks(controller.signal).then(setPreStocks).catch(() => undefined);
     void fetchPythAaplStatus(controller.signal).then(setPyth).catch(() => undefined);
+    void fetchMeteoraEvidence(controller.signal).then(setMeteora).catch(() => undefined);
     return () => controller.abort();
   }, []);
 
@@ -63,8 +82,8 @@ export function DemoPage(): JSX.Element {
   return (
     <main className="judge-demo">
       <div className="demo-notice" role="note">
-        <span>SIMULATED JUDGE MODE</span>
-        <strong>No wallet · no real assets · deterministic demo data</strong>
+        <span>GUIDED JUDGE MODE</span>
+        <strong>Live sponsor data + verified devnet evidence · settlement clicks are simulated</strong>
       </div>
 
       <header className="demo-hero">
@@ -82,17 +101,45 @@ export function DemoPage(): JSX.Element {
         </div>
       </header>
 
+      <section className="integration-evidence" aria-label="Live sponsor integration evidence">
+        <article data-state={preStocksGate?.passed ? "pass" : "loading"}>
+          <div><span>01 · PRESTOCKS</span><b>{preStocksGate?.passed ? "POLICY PASS" : "VERIFYING"}</b></div>
+          <h2>Official-only private equity rail</h2>
+          <p>{selected ? `${selected.name} is API-allowlisted, ${selected.onChainVerified ? "Token-2022 verified" : "unverified"}; ${navPremium(selected).toFixed(1)}% token-to-mark spread.` : "Loading the official PreStocks catalog…"}</p>
+          {selected && <a href={`https://solscan.io/token/${selected.contractAddress}`} target="_blank" rel="noreferrer">Official mint {shorten(selected.contractAddress)} ↗</a>}
+        </article>
+        <article data-state={pythGate?.passed ? "pass" : pyth ? "ready" : "loading"}>
+          <div><span>02 · PYTH</span><b>{pythGate?.passed ? "RISK PASS" : pyth ? "BROKER READY" : "VERIFYING"}</b></div>
+          <h2>AAPLx settlement risk gate</h2>
+          <p>{pyth?.price !== null && pyth?.price !== undefined ? `$${pyth.price.toFixed(2)} · ${pythGate?.confidenceBps?.toFixed(1)} bps confidence · ${pythGate?.ageSeconds}s old` : pythGate?.reason ?? "Discovering the canonical feed…"}</p>
+          {pyth && <a href={`https://insights.pyth.network/price-feeds/${pyth.feedId}`} target="_blank" rel="noreferrer">Feed {shorten(pyth.feedId)} ↗</a>}
+        </article>
+        <article data-state={meteora?.verified ? "pass" : "loading"}>
+          <div><span>03 · METEORA DBC</span><b>{meteora?.verified ? "ON-CHAIN PASS" : "VERIFYING"}</b></div>
+          <h2>Traded equity-receipt curve</h2>
+          <p>{meteora ? `${(meteora.curveProgress * 100).toFixed(3)}% curve progress · ${(meteora.quoteReserveLamports / 1e9).toFixed(4)} SOL reserve · ${meteora.graduation}` : "Checking pool ownership and transaction finality…"}</p>
+          {meteora && <a href={transactionUrl(meteora.tradeSignature)} target="_blank" rel="noreferrer">Finalized devnet trade {shorten(meteora.tradeSignature)} ↗</a>}
+        </article>
+      </section>
+
       <section className="demo-workspace" aria-live="polite">
         <div className="demo-operation">
           <div className="sponsor-controls">
-            <label htmlFor="demo-asset">PreStocks private-market asset</label>
-            <select id="demo-asset" value={selectedSymbol} onChange={(event) => { setSelectedSymbol(event.target.value); setStep(0); }}>
-              {preStocks.length === 0 && <option value="ANTHROPIC">Loading live PreStocks…</option>}
-              {preStocks.map((stock) => <option value={stock.symbol} key={stock.contractAddress}>{stock.symbol} · ${stock.tokenPrice.toFixed(2)}</option>)}
+            <label htmlFor="demo-lane">Settlement policy lane</label>
+            <select id="demo-lane" value={lane} onChange={(event) => { setLane(event.target.value as "prestocks" | "aaplx"); setStep(0); }}>
+              <option value="prestocks">PreStocks · official-only NAV guard</option>
+              <option value="aaplx">AAPLx · Pyth price risk gate</option>
             </select>
+            {lane === "prestocks" && <>
+              <label htmlFor="demo-asset">Official PreStocks asset</label>
+              <select id="demo-asset" value={selectedSymbol} onChange={(event) => { setSelectedSymbol(event.target.value); setStep(0); }}>
+                {preStocks.length === 0 && <option value="ANTHROPIC">Loading live PreStocks…</option>}
+                {preStocks.map((stock) => <option value={stock.symbol} key={stock.contractAddress}>{stock.symbol} · ${stock.tokenPrice.toFixed(2)}</option>)}
+              </select>
+            </>}
             <div className="sponsor-signals">
-              <span><b>PreStocks</b> {selected ? `live · ${navPremium(selected).toFixed(1)}% vs mark` : "connecting"}</span>
-              <span><b>Pyth</b> {pyth ? `${pyth.symbol} · ${pyth.isOpen ? "24/7 feed live" : "closed"}` : "verifying feed"}</span>
+              <span><b>PreStocks</b> {preStocksGate ? preStocksGate.reason : "connecting"}</span>
+              <span><b>Pyth</b> {pythGate?.reason ?? "verifying feed"}</span>
               <span>
                 <b>Meteora DBC</b>{" "}
                 <a href={METEORA_EXPLORER_URL} target="_blank" rel="noreferrer" title={METEORA_DBC_POOL}>
@@ -110,12 +157,14 @@ export function DemoPage(): JSX.Element {
             <div><dt>Portfolio</dt><dd>Frontier Equity Fund</dd></div>
             <div><dt>Policy</dt><dd>3-of-5 FROST</dd></div>
             <div><dt>Position</dt><dd>{step === 0 ? `42.50 ${asset} public` : step < 4 ? `42.50 ${asset} shielded` : `30.00 ${asset} shielded`}</dd></div>
+            <div><dt>Risk policy</dt><dd>{activePolicy}</dd></div>
             <div><dt>Approvals</dt><dd>{step < 3 ? "0 / 3" : "3 / 3 verified"}</dd></div>
           </dl>
 
-          <button className="primary big demo-action" type="button" onClick={advance}>
+          <button className="primary big demo-action" type="button" onClick={advance} disabled={step === 0 && !activeGatePassed}>
             {current.action.replaceAll("AAPLx", asset)} <span aria-hidden="true">→</span>
           </button>
+          {step === 0 && !activeGatePassed && <p className="demo-blocked">Settlement blocked by the active sponsor risk policy.</p>}
           {isFinal && <p className="demo-success">Proof verified · settlement final · recipient claim ready</p>}
         </div>
 
@@ -157,7 +206,7 @@ export function DemoPage(): JSX.Element {
       </ol>
 
       <section className="demo-proof-stack" aria-label="Architecture used by the full implementation">
-        <span>PreStocks asset</span><b>→</b><span>Pyth risk signal</span><b>→</b><span>Noir + FROST proof</span><b>→</b><span>Meteora DBC receipt</span>
+        <span>PreStocks allowlist + NAV guard</span><b>→</b><span>Pyth freshness + confidence gate</span><b>→</b><span>Noir + FROST proof</span><b>→</b><span>Meteora traded DBC receipt</span>
       </section>
 
       <p className="demo-footnote">

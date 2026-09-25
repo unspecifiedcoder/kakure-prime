@@ -37,15 +37,15 @@ On-chain observers see commitments, nullifiers, and valid Groth16 proofs. Author
 - End-to-end local-validator flow: create portfolio → deposit → approve → private transfer → withdraw.
 - Token-2022 deposit and withdrawal routing added for Stocklana.
 - Live issuer quote data and verified Solana xStock mint presets in the application.
-- Live PreStocks catalog, mint addresses, mark prices, and token prices from the official API; the demo can shield only official PreStocks assets in its private-market mode.
-- Pyth's canonical `Crypto.AAPLX/USD` feed discovery and live market-status signal, surfaced in the settlement workflow.
-- A stock-aware Meteora DBC receipt: fees decay from 100 bps to the protocol minimum of 25 bps over 24 hours before DAMM v2 graduation.
+- Live PreStocks catalog, mint addresses, mark prices, and token prices from the official API. The API is the allowlist, and the guided settlement enforces valid contract formatting plus a ±15% token-to-mark mandate.
+- Pyth's canonical `Crypto.AAPLX/USD` feed discovery plus a server-side authenticated price broker. The settlement policy rejects prices older than 30 seconds or wider than 100 bps confidence; `PYTH_API_KEY` activates live pricing without exposing the secret to browsers.
+- A stock-aware Meteora DBC receipt with fees decaying from 100 bps to the protocol minimum of 25 bps over 24 hours before DAMM v2 graduation. The pool has a finalized devnet buy and observable curve progress.
 
 ## Sponsor track scope
 
-- **PreStocks:** official API assets are selectable in the working judge demo; the displayed premium/discount is computed from live PreStocks mark and token prices. No competing pre-IPO token is integrated.
-- **Pyth Network:** Kakure discovers the canonical AAPLx Pyth feed and uses its live market schedule as a risk signal beside private settlement. A production deployment routes authenticated Pyth Pro prices through a server-side token broker; no API secret is shipped to the browser.
-- **Meteora DBC:** the product applies a decreasing-fee DBC to a transferable shielded-equity receipt, using a 100 bps early price-discovery fee, a mature 25 bps fee, and DAMM v2 graduation. The reproducible deployment is `scripts/deploy-meteora-dbc.mjs` and is devnet-only.
+- **PreStocks:** official API assets are selectable in the working judge demo. Their contract address and live premium/discount are verified by an official-only policy gate before settlement. No competing pre-IPO token is integrated.
+- **Pyth Network:** Kakure discovers the canonical AAPLx feed and uses authenticated price, confidence, and publication time as a settlement risk gate. `apps/web/api/pyth.js` is the secret-safe broker; without `PYTH_API_KEY`, the UI honestly falls back to catalog verification rather than fabricating a price.
+- **Meteora DBC:** the product applies a decreasing-fee DBC to a transferable shielded-equity receipt, using a 100 bps early price-discovery fee, a mature 25 bps fee, and DAMM v2 graduation. `scripts/deploy-meteora-dbc.mjs` creates it; `scripts/trade-meteora-dbc.mjs` quotes and executes a buy with the official SDK.
 
 ## Devnet deployment
 
@@ -56,6 +56,8 @@ On-chain observers see commitments, nullifiers, and valid Groth16 proofs. Author
 - Shielded-equity receipt mint: `Eqi8f5wf2fDWKriZUGC8qRS9ueYwhf37LDpZupaSbfJ8`
 - DBC config transaction: `2f12VxbqsTogybhARtUddxmVdKstxFu67QJHNvqr5QLS97Qcc6FEqofvPsV8cFa7wThUuN2qegDVeRAe6LPbMFkE`
 - DBC pool transaction: `4dLKSKqFAwAemaXXwAveqmiWVLiKDdbW8K1pZ8w3beYQSHFasqH2FTgkwSrmxvEqRmbfyFBnhWigF9cADTfmt8mY`
+- DBC receipt buy transaction: `57ro5JMwkSZaMM15DjBrCXkUoxKtVvfRkJbYAVRHZzz6TKGdTivqKvDiLsGh22FroEBBbXrdQzjuRw6Cr368y1to`
+- Post-trade quote reserve: `0.0198 SOL`; quote-side curve progress: `0.8241%`
 - Network: Solana devnet
 
 The verifier above is the repository's explicitly labelled test verifier, used only to exercise the
