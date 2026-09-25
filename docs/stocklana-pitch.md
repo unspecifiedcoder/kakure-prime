@@ -23,7 +23,7 @@ Kakure Prime gives tokenized equities the missing institutional primitive: priva
 ## Recording shot list
 
 1. Project title and one-line problem.
-2. Open `/#/demo`; pause on the three live integration evidence cards.
+2. Open `/#/demo`; pause on the four live integration and protocol evidence cards.
 3. Select Anthropic and point to official mint verification plus NAV policy pass.
 4. Switch to AAPLx and show the Pyth freshness/confidence decision.
 5. Return to PreStocks and advance through all five settlement stages.

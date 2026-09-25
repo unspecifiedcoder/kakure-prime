@@ -22,7 +22,7 @@ The guided clicks are simulated for accessibility. The repository separately con
 ### Pyth — price-risk enforcement, not decoration
 
 - Kakure discovers the canonical `Crypto.AAPLX/USD` feed.
-- An authenticated server broker retrieves price, confidence, and publication time without exposing the Pyth key to the browser.
+- When a Pyth Pro key is configured, the server broker retrieves price, confidence, and publication time without exposing the key to the browser.
 - AAPLx settlement is blocked when the price is older than 30 seconds or confidence exceeds 100 bps.
 - The judge UI exposes both the decision and the underlying feed ID.
 
@@ -56,5 +56,6 @@ Kakure Prime transparently builds on Kakure, an Apache-2.0 project by the same a
 
 Pre-release, unaudited, and devnet/localnet only. The current trusted setup and demo verifier are not production-safe. Kakure Prime does not issue securities or provide investment advice.
 
-**Demo:** https://kakure-prime.vercel.app/#/demo  
-**Source:** https://github.com/unspecifiedcoder/kakure-prime
+- **Demo:** https://kakure-prime.vercel.app/#/demo
+- **Technical video:** https://kakure-prime.vercel.app/demo-video.html
+- **Source:** https://github.com/unspecifiedcoder/kakure-prime
