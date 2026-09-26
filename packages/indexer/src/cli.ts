@@ -18,13 +18,20 @@ async function main(): Promise<void> {
   const ingestor = new Ingestor({ chain, store, tree, idl, programId: config.programId });
 
   ingestor.hydrateTree();
-  await ingestor.backfill();
   const stopLiveTail = ingestor.startLiveTail();
 
   const app = buildIndexerApi({ store, tree, ingestor });
   await app.listen({ port: config.port, host: config.host });
   // eslint-disable-next-line no-console
   console.log(`kakure-indexer listening on ${config.host}:${config.port}`);
+
+  // Do not hold the HTTP API hostage to a slow public RPC. Some shared Solana endpoints can take
+  // minutes to answer `getSignaturesForAddress`; the live subscription must already be attached so
+  // new events are not missed while the historical cursor catches up.
+  void ingestor.backfill().catch((err: unknown) => {
+    // eslint-disable-next-line no-console
+    console.error("ingest: historical backfill failed", err);
+  });
 
   const shutdown = async (): Promise<void> => {
     stopLiveTail();

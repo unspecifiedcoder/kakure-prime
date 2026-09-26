@@ -1,0 +1,32 @@
+app = "kakure-prime-indexer"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile.fly"
+
+[processes]
+  app = "node indexer/dist/cli.js --port 8080 --rpc https://api.devnet.solana.com --program-id HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF --idl packages/sdk/src/solana/idl/kakure_pool.json --db /data/kakure-indexer.sqlite --host 0.0.0.0"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 100
+    hard_limit = 150
+
+[[mounts]]
+  source = "indexer_data"
+  destination = "/data"
+  initial_size = "1gb"
+  processes = ["app"]
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

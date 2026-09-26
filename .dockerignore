@@ -1,0 +1,13 @@
+.git
+.github
+.next
+.vercel
+**/node_modules
+**/dist
+**/target
+apps/web/playwright-report
+apps/web/test-results
+work
+*.sqlite
+*.log
+
