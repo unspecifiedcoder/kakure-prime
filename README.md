@@ -51,7 +51,7 @@ Kakure Prime gives funds, DAOs, family offices, and global teams a confidential 
 | Pyth settlement-risk rail | Live when entitled | Server-only broker; freshness and confidence enforcement |
 | Meteora DBC | Traded on devnet | [Pool](https://explorer.solana.com/address/58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW?cluster=devnet) · [finalized buy](https://explorer.solana.com/tx/57ro5JMwkSZaMM15DjBrCXkUoxKtVvfRkJbYAVRHZzz6TKGdTivqKvDiLsGh22FroEBBbXrdQzjuRw6Cr368y1to?cluster=devnet) |
 | Hosted judge walkthrough | Live | Sponsor/deployment evidence is live; the five settlement clicks are intentionally simulated |
-| Zero-install browser proving | Integrated; deployment artifacts required | Deposit/withdraw use the real worker-based Go/gnark WASM prover with persistent artifact caching and prepared-circuit reuse; a deployment must stage its matching `.ccs`/`.pk`/WASM assets |
+| Zero-install browser proving | Live devnet bundle | Deposit/withdraw use the real worker-based Go/gnark WASM prover with persistent artifact caching, prepared-circuit reuse, and a SHA-256-pinned development artifact bundle |
 
 The full cryptographic flow runs end to end on a local validator. The hosted walkthrough is designed for reliable judging without an 80-second proof wait or a local prover installation; it labels its simulated settlement clicks in the UI.
 

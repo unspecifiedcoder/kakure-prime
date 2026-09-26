@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { Fr } from "@aztec/foundation/fields";
 import { computePsi, deriveCek } from "@kakure/sdk";
 import { CircuitId, PUBLIC_INPUT_COUNT } from "@kakure/sdk/tx";
-import { buildTransferMultisigInputMap, buildWithdrawInputMap } from "@kakure/prover";
+import { buildDepositInputMap, buildTransferMultisigInputMap, buildWithdrawInputMap } from "@kakure/prover";
 import { decodeProof, decodePublicWitness } from "@kakure/prover";
 import { wasmProverPort } from "../wasmProver.js";
 // Side effect: defines the global `Go` class the wasm module needs
@@ -95,6 +95,50 @@ const COMPLIANCE_PK: [bigint, bigint] = [
   0x245e25ab2bd42f0280a5ade750828dd6868f5225ae798d6b51c676f519c8f4e8n,
 ];
 const KAT_FROST_Z = hex("0x04ff02bb111b27461ff96210e331fc5be63f4fd36ea24dce0a77da9c4ed923c8");
+
+describe("wasmProverPort() end-to-end: deposit KAT", () => {
+  const depositCircuit = "deposit";
+  const runDeposit = hasArtifacts(depositCircuit) ? it : it.skip;
+
+  runDeposit(
+    "produces the 13-entry deposit proof bundle from the published browser artifacts",
+    async () => {
+      const port = wasmProverPort({
+        wasmBytes: readFileSync(`${WASM_DIR}/prover.wasm`),
+        circuits: [CircuitId.Deposit],
+        async artifactsFor() {
+          return {
+            acirJson: readFileSync(`${ARTIFACTS_DIR}/${depositCircuit}.json`, "utf-8"),
+            ccsBytes: new Uint8Array(readFileSync(`${ARTIFACTS_DIR}/${depositCircuit}.ccs`)),
+            pkBytes: new Uint8Array(readFileSync(`${ARTIFACTS_DIR}/${depositCircuit}.pk`)),
+          };
+        },
+      });
+      const bundle = await port.prove(
+        CircuitId.Deposit,
+        buildDepositInputMap({
+          compliancePk: COMPLIANCE_PK,
+          note: {
+            noteVersion: new Fr(1n),
+            assetId: hex("0x1234567890123456789012345678901234567890"),
+            noteType: new Fr(0n),
+            conditionsHash: new Fr(0n),
+            value: new Fr(100n),
+            owner: hex("0x2874ae964d8b283e2f521a7f14125fc92747bb9770139b8d4b70ee09e2d83785"),
+            psi: hex("0x1a72e6c3463dd2509150c482ad772ede1290d453977279eed05f10ae8cbd75f0"),
+            parents: new Fr(0n),
+          },
+          eph: new Fr(5n),
+        }),
+      );
+
+      expect(bundle.circuitId).toBe(CircuitId.Deposit);
+      expect(bundle.publicInputs).toHaveLength(PUBLIC_INPUT_COUNT[CircuitId.Deposit]);
+      expect(bundle.proof).toHaveLength(192);
+    },
+    15 * 60 * 1000,
+  );
+});
 
 describe("wasmProverPort() end-to-end: transfer_multisig KAT", () => {
   run(

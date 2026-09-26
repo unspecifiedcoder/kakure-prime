@@ -139,6 +139,12 @@ browser Cache Storage, so returning users avoid the network download. This does 
 Groth16's single-core proving cost, but it removes the avoidable setup work around it and keeps the
 UI responsive.
 
+The Stocklana web deployment ships a pinned deposit/withdraw bundle under
+`apps/web/public/prover-wasm/`. `manifest.json` records every artifact's byte length and SHA-256,
+and `pnpm verify:prover-assets` is a CI gate against partial or mismatched uploads. The bundle is
+explicitly **INSECURE-DEVELOPMENT-ONLY** and scoped to Solana devnet; production parameters require
+a real multi-party trusted setup.
+
 ## Correctness
 
 Every prove call in this spike -- Node/wasm and Chromium/wasm, all three circuits, both before and

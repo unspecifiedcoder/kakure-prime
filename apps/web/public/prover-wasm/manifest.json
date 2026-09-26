@@ -1,0 +1,51 @@
+{
+  "version": "stocklana-devnet-v1",
+  "network": "solana-devnet",
+  "setup": "INSECURE-DEVELOPMENT-ONLY",
+  "created": "2026-09-26",
+  "toolchain": {
+    "go": "1.24.6",
+    "gnark": "0.14.0",
+    "gnarkCrypto": "0.19.0",
+    "sunspotCommit": "43891c5"
+  },
+  "warning": "Development Groth16 parameters for the Stocklana devnet demonstration. Never use with real assets.",
+  "files": {
+    "prover.wasm": {
+      "bytes": 20295571,
+      "sha256": "973fd0dd69de93831056d438a6967cddad6505b2c391f33543a9aa9bbda7f097"
+    },
+    "circuits/deposit.json": {
+      "bytes": 301476,
+      "sha256": "504cbea43b2c65f7f58de71553f868987b5fe1c4baa20070c6131dafb8e7d595"
+    },
+    "circuits/deposit.ccs": {
+      "bytes": 761309,
+      "sha256": "9ea7545f9140373991e94bf392dbc2264ab1b3fafb6c6413cb3c9a517d63ac5a"
+    },
+    "circuits/deposit.pk": {
+      "bytes": 7155647,
+      "sha256": "8c73a6250971170cd466e1c04393d2eef276b0ec079d0bc8044641a88398c5c0"
+    },
+    "circuits/deposit.vk": {
+      "bytes": 1824,
+      "sha256": "e3c96858929c7a4abf70fab5a3bf8e1b1f22ae2b6534eb8bb071629d99b5ceac"
+    },
+    "circuits/withdraw.json": {
+      "bytes": 1537235,
+      "sha256": "812fa971d4e04fdf923c822d6416659d5290d194690bed81710fb12ee9789fc0"
+    },
+    "circuits/withdraw.ccs": {
+      "bytes": 2493655,
+      "sha256": "e46765a1c5978f7254edbde7b0171f0e923b7334b7797a21a79f482f41be537e"
+    },
+    "circuits/withdraw.pk": {
+      "bytes": 18435627,
+      "sha256": "d7ae222a24b1c7b41eb674bc440a6942191eac3f73d40c6dd643215da02f048f"
+    },
+    "circuits/withdraw.vk": {
+      "bytes": 2080,
+      "sha256": "7c27e954e6e510e7e38c4f69a7d4350ab9572d32883368dfb82396f34917d4d4"
+    }
+  }
+}
