@@ -24,7 +24,7 @@ beforeEach(() => {
 describe("Home (spec §1.1: connect, create/join a private treasury)", () => {
   it("shows a connect button when no wallet is connected, and no treasuries yet", () => {
     renderHome();
-    expect(screen.getByRole("button", { name: /enter private markets/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /connect phantom wallet/i })).toBeInTheDocument();
     expect(screen.getByText(/no private portfolios yet/i)).toBeInTheDocument();
   });
 
@@ -44,7 +44,7 @@ describe("Home (spec §1.1: connect, create/join a private treasury)", () => {
     vi.spyOn(walletLib, "deriveAccount").mockResolvedValue(account);
 
     renderHome();
-    screen.getByRole("button", { name: /enter private markets/i }).click();
+    screen.getByRole("button", { name: /connect phantom wallet/i }).click();
     await waitFor(() => expect(screen.getByText(/connected:/i)).toBeInTheDocument());
   });
 

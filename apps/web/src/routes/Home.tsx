@@ -126,7 +126,7 @@ export function Home(): JSX.Element {
             </p>
           ) : (
             <button type="button" className="primary big" onClick={() => void onConnect()} disabled={connectStatus.kind === "connecting"}>
-              {connectStatus.kind === "connecting" ? "Waiting for your wallet…" : "Enter private markets"}
+              {connectStatus.kind === "connecting" ? "Waiting for Phantom…" : "Connect Phantom wallet"}
             </button>
           )}
           {connectStatus.kind === "error" && <p role="alert">{connectStatus.message}</p>}
