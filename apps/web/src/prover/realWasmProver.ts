@@ -71,6 +71,10 @@ export interface RealWasmProverOptions {
   inline?: boolean;
 }
 
+export interface RealWasmProverPort extends ProverPort {
+  prepare(circuit: CircuitId): Promise<void>;
+}
+
 let workerUrlPromise: Promise<string> | undefined;
 
 /** Vite: `?worker&url` bundles the dependency's worker entry as a separate chunk and resolves to
@@ -82,10 +86,11 @@ function workerScriptUrl(): Promise<string> {
 
 /** Builds the real `ProverPort` over `@kakure/prover-wasm`, lazily importing the package itself
  *  (code-split by the bundler, per this file's own doc comment) on first use. */
-export function realWasmProver(opts: RealWasmProverOptions = {}): ProverPort {
-  let portPromise: Promise<ProverPort> | undefined;
+export function realWasmProver(opts: RealWasmProverOptions = {}): RealWasmProverPort {
+  type WarmablePort = ProverPort & { prepare(circuit: CircuitId): Promise<void> };
+  let portPromise: Promise<WarmablePort> | undefined;
 
-  function getPort(): Promise<ProverPort> {
+  function getPort(): Promise<WarmablePort> {
     portPromise ??= (async () => {
       const { wasmProverPort } = await import("@kakure/prover-wasm");
       const [wasmBytes, workerUrl] = await Promise.all([fetchWasmBytes(), opts.inline ? undefined : workerScriptUrl()]);
@@ -104,6 +109,11 @@ export function realWasmProver(opts: RealWasmProverOptions = {}): ProverPort {
   }
 
   return {
+    async prepare(circuit) {
+      const port = await getPort();
+      await port.prepare(circuit);
+    },
+
     async capabilities() {
       return { circuits: [CircuitId.Deposit, CircuitId.Withdraw], environment: "wasm" as const };
     },

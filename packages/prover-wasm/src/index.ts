@@ -1,6 +1,7 @@
 export {
   wasmProverPort,
   type WasmProverOptions,
+  type WasmProverPort,
   type WasmCircuitArtifacts,
   type WasmProverProgressStage,
 } from "./wasmProver.js";

@@ -57,6 +57,7 @@ describe("wasmProverPort worker protocol", () => {
       workerUrl: "worker.js",
     });
 
+    await port.prepare(CircuitId.Withdraw);
     await port.prove(CircuitId.Withdraw, {});
     await port.prove(CircuitId.Withdraw, {});
 

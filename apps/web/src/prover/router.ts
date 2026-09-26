@@ -69,3 +69,10 @@ export function proverFor(circuitId: CircuitId, opts: ProverRouterOptions): Prov
       return helperProver(opts.helper);
   }
 }
+
+/** Starts the expensive download/worker/key-deserialization path while the user is reading or
+ * connecting their wallet. Failures are deliberately retryable by the eventual prove() call. */
+export async function prewarmBrowserProver(circuitId: CircuitId): Promise<void> {
+  if (typeof Worker === "undefined") return;
+  await sharedWasmProver.prepare(circuitId);
+}

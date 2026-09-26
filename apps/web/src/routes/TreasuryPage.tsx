@@ -6,7 +6,7 @@ import { loadEncrypted } from "../lib/keystore.js";
 import type { GroupRecord } from "../lib/treasury.js";
 import { parsePayrollCsv, totalAmount, type PayrollRow } from "../lib/payrollPlan.js";
 import { scanMultisigGroup, scanMultisigGroupViews } from "../lib/multisigScan.js";
-import { proverFor } from "../prover/router.js";
+import { prewarmBrowserProver, proverFor } from "../prover/router.js";
 import { CircuitId } from "@kakure/sdk/tx";
 import { assetId } from "@kakure/sdk/solana";
 import { depositToTreasury, payOneRecipient, ensureLookupTable, selectSpendableNotes } from "../lib/treasuryFlows.js";
@@ -82,6 +82,7 @@ export function TreasuryPage(): JSX.Element {
     try {
       const group = await loadEncrypted<GroupRecord>(id, passphrase);
       setUnlock({ kind: "unlocked", group });
+      void prewarmBrowserProver(CircuitId.Deposit).catch(() => undefined);
     } catch (err) {
       setUnlock({ kind: "error", message: err instanceof Error ? err.message : String(err) });
     }

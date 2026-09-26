@@ -6,7 +6,7 @@ import { scanSingleKey, type SingleKeyScanResult } from "../lib/singleKeyScan.js
 import { connectPhantom, deriveAccount, type ConnectedWallet } from "../lib/wallet.js";
 import { findClaimableNotes, withdrawClaimedNote } from "../lib/claimFlows.js";
 import { browserEphemeralCounterStore } from "../lib/ephemeralCounters.js";
-import { proverFor } from "../prover/router.js";
+import { prewarmBrowserProver, proverFor } from "../prover/router.js";
 import { useAppStore } from "../store/appStore.js";
 import type { SolanaAccount } from "@kakure/sdk";
 import { myReceiveAddress, encodeReceiveAddress } from "../lib/receiveAddress.js";
@@ -91,6 +91,11 @@ export function ClaimPage(): JSX.Element {
   useEffect(() => {
     setStatus({ kind: "idle" });
   }, [token]);
+
+  useEffect(() => {
+    if (!claim) return;
+    void prewarmBrowserProver(CircuitId.Withdraw).catch(() => undefined);
+  }, [claim]);
 
   async function connectAndScan(): Promise<void> {
     if (!claim) return;

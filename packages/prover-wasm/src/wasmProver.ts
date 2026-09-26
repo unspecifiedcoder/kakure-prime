@@ -70,14 +70,20 @@ export interface WasmProverOptions {
   workerUrl?: string | URL;
 }
 
+export interface WasmProverPort extends ProverPort {
+  /** Fetches, transfers, and deserializes a circuit before the user submits an action. Safe to
+   * call repeatedly: preparation is memoized per circuit for the lifetime of this port. */
+  prepare(circuit: CircuitId): Promise<void>;
+}
+
 /** Builds a `ProverPort` backed by the wasm prover, either inline on the calling thread or (with
  * `worker: true`) in a dedicated Web Worker. Instantiates the wasm module lazily (once, shared
  * across every `prove()` call) on the first `prove()`/`capabilities()` call. */
-export function wasmProverPort(opts: WasmProverOptions): ProverPort {
+export function wasmProverPort(opts: WasmProverOptions): WasmProverPort {
   return opts.worker ? wasmProverPortViaWorker(opts) : wasmProverPortInline(opts);
 }
 
-function wasmProverPortInline(opts: WasmProverOptions): ProverPort {
+function wasmProverPortInline(opts: WasmProverOptions): WasmProverPort {
   let ready: Promise<void> | undefined;
   const prepared = new Map<CircuitId, Promise<string>>();
 
@@ -110,6 +116,10 @@ function wasmProverPortInline(opts: WasmProverOptions): ProverPort {
   }
 
   return {
+    async prepare(circuit: CircuitId) {
+      await ensurePrepared(circuit);
+    },
+
     async capabilities() {
       return { circuits: opts.circuits, environment: "wasm" as const };
     },
@@ -150,7 +160,7 @@ interface PendingPreparation {
   reject(err: Error): void;
 }
 
-function wasmProverPortViaWorker(opts: WasmProverOptions): ProverPort {
+function wasmProverPortViaWorker(opts: WasmProverOptions): WasmProverPort {
   let worker: Worker | undefined;
   let ready: Promise<void> | undefined;
   let nextRequestId = 0;
@@ -244,6 +254,10 @@ function wasmProverPortViaWorker(opts: WasmProverOptions): ProverPort {
   }
 
   return {
+    async prepare(circuit: CircuitId) {
+      await ensurePrepared(circuit);
+    },
+
     async capabilities() {
       return { circuits: opts.circuits, environment: "wasm" as const };
     },
