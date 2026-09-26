@@ -11,6 +11,7 @@
   "packageManager": "pnpm@10.24.0",
   "scripts": {
     "build": "pnpm -r --if-present build",
+    "security:secrets": "node scripts/check-secrets.mjs",
     "deploy:meteora-devnet": "node scripts/deploy-meteora-dbc.mjs",
     "trade:meteora-devnet": "node scripts/trade-meteora-dbc.mjs",
     "test": "pnpm -r --if-present test",

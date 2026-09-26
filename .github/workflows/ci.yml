@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: node scripts/check-secrets.mjs
+
+  javascript:
+    name: Typecheck, test, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.24.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - name: Unit and component tests
+        run: >-
+          pnpm
+          --workspace-concurrency=1
+          --filter @kakure/circuits
+          --filter @kakure/sdk
+          --filter @kakure/prover
+          --filter @kakure/prover-wasm
+          --filter @kakure/cli
+          --filter @kakure/coordinator
+          --filter @kakure/helper
+          --filter @kakure/indexer
+          --filter @kakure/web
+          test
+      - run: pnpm build
+
+  rust:
+    name: Rust workspace
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install pinned compatible Rust toolchain
+        run: rustup toolchain install 1.84.0 --profile minimal
+      - run: cargo +1.84.0 test --workspace --locked
