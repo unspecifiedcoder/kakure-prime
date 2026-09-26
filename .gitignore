@@ -24,3 +24,4 @@ circuits/target/*-keypair.json
 !programs/deploy/*-keypair.json
 apps/web/test-results/
 apps/web/playwright-report/
+.vercel
