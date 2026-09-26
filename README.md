@@ -1,144 +1,239 @@
 # Kakure Prime (隠れ Prime)
 
-**Confidential treasury and settlement for tokenized equities on Solana.**
-Kakure Prime lets a fund, DAO, or global team custody and distribute tokenized stock positions under threshold approval without publishing its portfolio, recipients, signer graph, or strategy to the world.
+<p align="center">
+  <strong>Confidential prime brokerage for tokenized equities on Solana.</strong><br />
+  Shield positions, require threshold approval, settle privately, and disclose only to an authorized audit quorum.
+</p>
 
-> **Stocklana build.** This repository is a transparent continuation of the open-source Kakure privacy protocol. The Stocklana work adds Token-2022 support for assets such as xStocks, a live equity-market surface, verified Solana mint presets, and a focused private-markets workflow. See [STOCKLANA.md](./STOCKLANA.md) for the submission brief and originality disclosure.
+<p align="center">
+  <a href="https://kakure-prime.vercel.app/"><img alt="Live demo" src="https://img.shields.io/badge/live_demo-kakure--prime.vercel.app-14F195?style=for-the-badge&logo=vercel&logoColor=white"></a>
+  <a href="https://explorer.solana.com/address/HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF?cluster=devnet"><img alt="Solana devnet" src="https://img.shields.io/badge/Solana-devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white"></a>
+  <a href="./LICENSE"><img alt="Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue?style=for-the-badge"></a>
+</p>
 
-> Status: **pre-release.** The core protocol runs end to end on a local validator with real zero-knowledge proofs. Not audited. Dev trusted setup only. Do not use with real funds or securities.
+> [!WARNING]
+> Kakure Prime is a pre-release research prototype. It is unaudited, uses development proving parameters, and is intended only for localnet/devnet demonstrations. Do not use it with real funds or securities.
 
----
+## Start here
 
-## Judge start here
+| Experience | Link |
+|---|---|
+| Live product | [kakure-prime.vercel.app](https://kakure-prime.vercel.app/) |
+| 60-second judge walkthrough | [Launch guided demo](https://kakure-prime.vercel.app/#/demo) |
+| Pitch video | [Watch the pitch](https://kakure-prime.vercel.app/pitch-video.html) |
+| Technical walkthrough | [Watch the technical demo](https://kakure-prime.vercel.app/demo-video.html) |
+| Stocklana submission brief | [SUBMISSION.md](./SUBMISSION.md) |
+| Build/originality disclosure | [STOCKLANA.md](./STOCKLANA.md) |
 
-- **60-second guided demo:** <https://kakure-prime.vercel.app/#/demo>
-- **PreStocks:** official API is the private-market allowlist; contract format and a ±15% token-to-mark mandate are enforced before the guided settlement can advance.
-- **Pyth:** the canonical `Crypto.AAPLX/USD` feed is discovered and a server-side Pyth Pro broker evaluates freshness (≤30 seconds) and confidence (≤100 bps). The browser never receives the API key.
-- **Meteora DBC:** a real devnet equity-receipt curve was created with the official SDK and traded on-chain. [Pool](https://explorer.solana.com/address/58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW?cluster=devnet) · [finalized trade](https://explorer.solana.com/tx/57ro5JMwkSZaMM15DjBrCXkUoxKtVvfRkJbYAVRHZzz6TKGdTivqKvDiLsGh22FroEBBbXrdQzjuRw6Cr368y1to?cluster=devnet)
+The fastest judging path is: open the guided demo, select an official PreStocks asset, inspect the live market-risk gate, advance a 3-of-5 private settlement, then open the linked Meteora pool and finalized trade on Solana Explorer.
 
-The hosted Pyth price rail requires a server-only `PYTH_API_KEY`. Without it, the application still verifies the canonical feed catalog but deliberately fails the price-risk gate instead of using stale or invented data.
+## The problem
 
-### What was built for Stocklana
+Tokenized equities are programmable, global, and fast—but their ownership graph is public. A fund that accumulates a position reveals its strategy. A company that distributes equity reveals recipients and amounts. A multisig protects keys, but still publishes the signer set, threshold, balances, and every movement.
 
-The privacy protocol predates the event and is disclosed below. The hackathon work is the Token-2022 equity compatibility layer, verified xStocks presets, official-only PreStocks policy rail, Pyth settlement-risk gate and server broker, Meteora DBC receipt/config/pool/trade, hosted judge experience, and reproducible devnet evidence.
+Kakure Prime gives funds, DAOs, family offices, and global teams a confidential settlement layer:
 
----
+- **Shielded positions:** amounts, assets, recipients, and signer structure are hidden behind commitments.
+- **Threshold custody:** dealerless FROST DKG creates a configurable `t-of-n` portfolio; no single signer holds the custody key.
+- **Private settlement:** Groth16 proofs enforce ownership, value conservation, and quorum approval on-chain.
+- **Selective auditability:** notes are additionally encrypted to a rotatable committee key, requiring an authorized quorum to disclose.
+- **Self-custody:** proofs are generated by the user; the coordinator and indexer are not trusted with funds or plaintext positions.
 
-## Why
+## What is real today
 
-Every treasury on Solana today is public. A DAO that pays 50 contributors publishes 50 salaries; a fund that rebalances publishes its book. Multisigs add safety, not privacy — the signer set, the threshold and every payment are on-chain for anyone to read.
+| Surface | Status | Evidence |
+|---|---|---|
+| Noir circuits + Groth16 proving | Working on localnet | Seven circuits, native prover, verifier programs, negative tests |
+| Solana shielded pool | Deployed on devnet | [Program `HPzs…sccF`](https://explorer.solana.com/address/HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF?cluster=devnet) |
+| FROST custody and encrypted coordination | Working | Dealerless DKG, threshold signing, encrypted relay |
+| Token-2022 routing | Working in code/localnet | Asset-program validation and deposit/withdraw routing |
+| PreStocks policy rail | Live in judge demo | Official API allowlist and ±15% token-to-mark mandate |
+| Pyth settlement-risk rail | Live when entitled | Server-only broker; freshness and confidence enforcement |
+| Meteora DBC | Traded on devnet | [Pool](https://explorer.solana.com/address/58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW?cluster=devnet) · [finalized buy](https://explorer.solana.com/tx/57ro5JMwkSZaMM15DjBrCXkUoxKtVvfRkJbYAVRHZzz6TKGdTivqKvDiLsGh22FroEBBbXrdQzjuRw6Cr368y1to?cluster=devnet) |
+| Hosted judge walkthrough | Live | Sponsor/deployment evidence is live; the five settlement clicks are intentionally simulated |
+| Zero-install browser proving | Not complete | `apps/web/src/prover/wasmProver.ts` is an explicit stub; native/local proving is real |
 
-Kakure keeps the safety and removes the exposure:
+The full cryptographic flow runs end to end on a local validator. The hosted walkthrough is designed for reliable judging without an 80-second proof wait or a local prover installation; it labels its simulated settlement clicks in the UI.
 
-- **Private group custody.** A t-of-n signing group (FROST threshold signatures, dealerless DKG) owns shielded notes. The threshold check happens *inside* the zero-knowledge proof, so a group-owned note is indistinguishable from a single-owner note on-chain.
-- **Private payouts.** Batch payments to many recipients; each recipient gets a claim link and withdraws to any wallet, with no install.
-- **Built-in auditability.** Every note is also encrypted to a rotatable *committee* key: a quorum of auditors can decrypt when legitimately required; no single party can. Confidentiality for the business, accountability for the regulator.
-- **Trust-minimised.** Proofs are generated on the user's own machine or in the browser and verified on-chain. No MPC network, no hardware enclave, no hosted prover in the trust path.
+## Sponsor integrations
 
-## How it works
+### PreStocks — official-only private-market settlement
+
+- The official PreStocks API is the allowlist; no competing pre-IPO token is integrated.
+- Contract addresses must be valid Solana keys and returned assets must satisfy the app's policy checks.
+- Live token and mark prices feed a ±15% mandate; out-of-policy settlement is blocked before shielding.
+- The selected official contract and policy decision remain visible to judges.
+
+### Pyth — risk enforcement, not a decorative price card
+
+- Kakure discovers the canonical `Crypto.AAPLX/USD` feed.
+- An authenticated server-side broker keeps `PYTH_API_KEY` out of the browser.
+- Settlement rejects prices older than 30 seconds or confidence intervals wider than 100 bps.
+- If the account is not entitled to AAPLx, the app transparently uses live `Crypto.SOL/USD` as a cross-market health gate rather than fabricating an equity price.
+
+### Meteora DBC — a traded shielded-equity receipt
+
+- Official SDK configuration with a 100 bps discovery fee decaying to the 25 bps protocol minimum over 24 hours.
+- DAMM v2 graduation with 10% permanently locked migration liquidity.
+- Real devnet configuration, receipt mint, pool, quote, and finalized buy transaction.
+- The curve is intended for price discovery around a transferable receipt representing shielded equity exposure—not a generic memecoin launch.
+
+## Architecture
 
 ```mermaid
 flowchart LR
-  subgraph client[Client side]
-    W[Web app / CLI]
-    P[Prover: local or WASM in browser]
+  subgraph client[User-controlled client]
+    W[React app / CLI]
+    P[Native prover or browser prover]
+    K[Encrypted local keystore]
     W --> P
+    W --> K
   end
-  subgraph services[Untrusted services]
-    C[Coordinator: relays end-to-end encrypted signer messages]
-    I[Indexer: mirrors the commitment tree, serves ciphertexts]
+
+  subgraph services[Untrusted, replaceable services]
+    C[Coordinator<br/>encrypted DKG + signing relay]
+    I[Indexer<br/>roots, paths, ciphertexts, nullifiers]
   end
-  subgraph chain[Solana]
-    POOL[kakure_pool program: commitment tree, nullifiers, SPL vaults, compliance key]
-    V[Groth16 verifier programs, one per circuit]
-    POOL -- CPI --> V
+
+  subgraph solana[Solana]
+    POOL[kakure_pool<br/>commitments + nullifiers + SPL vaults]
+    V[Groth16 verifier programs]
+    POOL -->|CPI verification| V
   end
-  W <--> C
-  W <--> I
-  P --> W
-  W -- proof + public inputs --> POOL
-  POOL -- events --> I
+
+  W <-->|encrypted envelopes| C
+  W <-->|public chain mirror| I
+  W -->|proof + public inputs| POOL
+  POOL -->|events| I
 ```
 
-- **Notes.** Funds live as UTXO-style notes: a commitment (Poseidon2 hash of the note) in a depth-32 Merkle tree. Spending a note requires a proof of ownership and publishes a nullifier that prevents double-spends.
-- **Circuits** (Noir): `deposit`, `transfer`, `withdraw` for single keys; `transfer_multisig`, `split_multisig`, `join_multisig`, `withdraw_multisig` for groups. The group circuits verify a FROST (Schnorr over BabyJubJub) signature as a constraint.
-- **Proofs.** Circuits compile to Groth16 (BN254) via [Sunspot](https://github.com/reilabs/sunspot); the pool program decompresses the 192-byte proof and verifies it through a CPI to a generated verifier program. Every instruction fits in one Solana transaction (≤1232 bytes) and under 1.4M CU.
-- **Tree.** Lean incremental Merkle tree hashed with Poseidon (v1) so the program can append using Solana's native `sol_poseidon` syscall; everything else (commitments, nullifiers, keys, signatures) uses Poseidon2 off-chain.
-- **Compliance.** The committee public key is injected on-chain into every proof's public inputs; notes are wrapped to it with threshold ECDH.
+### Privacy model
 
-## Repository layout
+Funds are represented as UTXO-style notes. Each note commits to its asset, value, owner, randomness, and audit ciphertext. The pool stores only commitments, Merkle roots, and spent nullifiers. A valid proof shows that a spend owns an unspent note, conserves value, and—when group-owned—contains a valid FROST quorum signature.
 
-| Path | What |
+The coordinator sees encrypted envelopes, session identifiers, and timing. The indexer sees public program events and encrypted note payloads. Neither service is trusted to authorize a spend or learn plaintext positions.
+
+## Devnet evidence
+
+| Artifact | Address / transaction |
 |---|---|
-| `circuits/` | Noir circuits, shared library, KATs, build pipeline (`just build-circuits`) |
-| `programs/kakure_pool/` | The on-chain program (native `solana-program`, borsh instructions) |
-| `programs/mock_verifier/` | Test-only verifier |
-| `tests-litesvm/` | Program integration tests (litesvm) |
-| `packages/sdk/` | Keys, notes, scanning, FROST/DKG, threshold decryption, transaction building |
-| `packages/prover/` | Witness generation + Groth16 proving via Sunspot; proof compression |
-| `packages/prover-wasm/` | The prover compiled to WebAssembly for in-browser proving |
-| `packages/indexer/` | Chain follower + HTTP API (roots, Merkle paths, ciphertexts, nullifiers) |
-| `packages/coordinator/` | Encrypted message relay for DKG and signing sessions |
-| `packages/helper/` | Local prover service for the web app (treasury side) |
-| `packages/cli/` | `kakure` command line: groups, deposits, proposals, signing, execution |
-| `apps/web/` | Web app: treasury (create, fund, pay people), recipient claim page, audit view |
-| `e2e/` | Localnet end-to-end scenario (DKG → deposit → 3-of-5 transfer → withdraw → negative cases) |
-| `docs/superpowers/` | Design specs, implementation plans, review findings |
+| Kakure pool | [`HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF`](https://explorer.solana.com/address/HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF?cluster=devnet) |
+| Demo verifier | [`37K2Nhpuh2r3xv6gZ9yfA8gPpEpvDXfLkgkK3YmdWVHT`](https://explorer.solana.com/address/37K2Nhpuh2r3xv6gZ9yfA8gPpEpvDXfLkgkK3YmdWVHT?cluster=devnet) |
+| Meteora DBC config | [`8wqCNyoxQMUGRJwXngG2wxVLzqduTazi2nDjcuoCqbFT`](https://explorer.solana.com/address/8wqCNyoxQMUGRJwXngG2wxVLzqduTazi2nDjcuoCqbFT?cluster=devnet) |
+| Meteora pool | [`58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW`](https://explorer.solana.com/address/58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW?cluster=devnet) |
+| Shielded-equity receipt | [`Eqi8f5wf2fDWKriZUGC8qRS9ueYwhf37LDpZupaSbfJ8`](https://explorer.solana.com/address/Eqi8f5wf2fDWKriZUGC8qRS9ueYwhf37LDpZupaSbfJ8?cluster=devnet) |
+| Finalized DBC buy | [`57ro…1to`](https://explorer.solana.com/tx/57ro5JMwkSZaMM15DjBrCXkUoxKtVvfRkJbYAVRHZzz6TKGdTivqKvDiLsGh22FroEBBbXrdQzjuRw6Cr368y1to?cluster=devnet) |
 
-## Quick start
+The deployed verifier is deliberately labelled as a **demo verifier**. Real Groth16 verification is exercised in the local-validator path; the demo verifier must never custody real assets.
 
-Prerequisites: Linux x86_64 (or WSL2), ~8 GB RAM, ~5 GB disk.
+## Repository map
+
+| Path | Purpose |
+|---|---|
+| `circuits/` | Seven Noir circuits, shared constraints, KATs, and build pipeline |
+| `programs/kakure_pool/` | Native Solana pool, vault routing, commitment tree, nullifiers, compliance key |
+| `programs/mock_verifier/` | Explicitly test/demo-only verifier |
+| `packages/sdk/` | Notes, scanning, FROST/DKG, threshold decryption, transaction builders |
+| `packages/prover/` | Native witness generation, Groth16 proving, proof compression |
+| `packages/prover-wasm/` | Browser-prover build work and benchmarks |
+| `packages/indexer/` | Solana event follower, Merkle mirror, witness/nullifier HTTP API |
+| `packages/coordinator/` | Encrypted relay for DKG and threshold-signing sessions |
+| `packages/helper/` | Local native-prover bridge for the web treasury flow |
+| `packages/cli/` | Group, deposit, proposal, signing, execution, and audit commands |
+| `apps/web/` | React product, judge demo, treasury, claim, and audit surfaces |
+| `tests-litesvm/` | Program-level integration tests |
+| `e2e/` | Full localnet flow with real proofs and negative cases |
+
+## Run it locally
+
+### Prerequisites
+
+- Linux x86_64 or WSL2
+- Node.js 22 and pnpm 10
+- Rust, Solana CLI, Go, Noir, and Sunspot
+- Approximately 8 GB RAM and 5 GB free disk
 
 ```bash
 git clone https://github.com/unspecifiedcoder/kakure-prime.git
 cd kakure-prime
-bash scripts/bootstrap.sh      # toolchain (Noir, Sunspot, Solana, Go, Rust, Node) + prebuilt artifacts
+bash scripts/bootstrap.sh
 
-just e2e-scenario              # full protocol on a local validator (≈3 min)
+# Real local-validator protocol flow: DKG → deposit → private transfer → withdraw
+just e2e-scenario
 ```
 
-Run the web app locally:
+Run the web stack:
 
 ```bash
-just helper-dev                # local prover service (prints a bearer token)
-just web-dev                   # http://127.0.0.1:5173
+just helper-dev   # native proving bridge; prints a short-lived bearer token
+just web-dev      # opens the React app on localhost
 ```
 
-Useful targets: `just build-circuits`, `just build-programs`, `just test`, `just e2e-payroll` (browser demo via Playwright).
+Phantom connection requires Chrome or Brave with the Phantom extension enabled. The Codex in-app browser and other extensionless embedded browsers cannot inject Phantom.
 
-## Program binaries
-`programs/deploy/{kakure_pool,mock_verifier}.so` are tracked in git (what `e2e/localnet.ts`
-genesis-loads and what a real deploy should ship). Rebuild them with `just build-programs`
-(plain `cargo build-sbf --sbf-out-dir programs/deploy`, no `dev-verify` feature -- see
-`programs/kakure_pool/Cargo.toml`'s doc comment on that feature for why it must never ship).
-`just verify-programs-reproducible` rebuilds into a scratch directory and `sha256sum`-compares
-against the committed binaries; run it whenever `programs/deploy/*.so` changes, and wire it into
-CI so a hand-edited or stale committed binary fails the build. `just build-programs-dev-verify`
-builds a separate, clearly-named `target/deploy-dev-verify/kakure_pool.so` for the real-verifier
-litesvm test (`tests-litesvm`'s `setup_dev_verify`) -- this one must never be committed or
-genesis-loaded by `e2e/localnet.ts`.
+## Build and test
 
-## Security model, honestly
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+pnpm test
 
-- **What is proven:** ownership, conservation of value, nullifier uniqueness, threshold approval, binding of every public input (verifying keys are checked for unconstrained inputs).
-- **What is trusted:** the Groth16 trusted setup (currently a *dev* setup — insecure by construction, localnet/devnet only); Sunspot (unaudited); the correctness of the circuits (carried over from a mutation-tested reference implementation, with new tests for every change).
-- **What services can learn:** the coordinator sees encrypted blobs, session ids and timing; the indexer serves range queries. Neither sees amounts, recipients, signers or group structure.
-- **Known limits:** browser proving of the group-transfer circuit takes ~80 s on a laptop (single-threaded WASM); the treasury side uses a local helper prover until a multithreaded prover ships. Nullifier PDAs cost rent. Anonymity is only as large as the pool.
+just build-circuits
+just build-programs
+just verify-programs-reproducible
+just e2e-scenario
+```
 
-Before any mainnet use: external audit, a multi-party trusted-setup ceremony, and independent review of the compliance-committee governance.
+`programs/deploy/*.so` contains the binaries loaded by the local validator. `just verify-programs-reproducible` rebuilds them in a scratch directory and compares SHA-256 hashes so stale or modified binaries are detectable.
 
-## Roadmap
+## Security model
 
-- [x] Circuits ported and compiled to Groth16; 7 verifier programs
-- [x] Pool program with real on-chain verification (~600k CU per spend)
-- [x] SDK, prover, indexer, coordinator, CLI
-- [x] Localnet end-to-end scenario with real proofs
-- [x] Web app: treasury, batch payouts, claim links, audit view; WASM prover
-- [x] Devnet program deployment and hosted judge demo (program addresses in `STOCKLANA.md`)
-- [ ] Multithreaded browser prover (Rust/WASM threads)
-- [ ] Trusted-setup ceremony; external audit
-- [ ] Payroll scheduling, multi-asset batches, accountant exports
+### Enforced today
+
+- Note ownership and value conservation
+- Nullifier uniqueness and double-spend prevention
+- Threshold approval inside the multisig circuits
+- Binding of public inputs to the proof
+- Asset-program validation for SPL Token and Token-2022 routing
+- Threshold-encrypted compliance payloads with committee-key rotation
+
+### Trusted or incomplete today
+
+- Development Groth16 setup parameters
+- Unaudited circuits, programs, and Sunspot toolchain
+- A demo verifier on the public devnet deployment
+- A local helper for treasury-side proving
+- A browser prover stub for zero-install deposits and withdrawals
+- The anonymity set of the active pool
+
+## What remains to build
+
+### P0 — complete the undeniable hosted transaction
+
+- [ ] Replace `WasmProver` with the real browser WASM prover for zero-install deposit and withdrawal.
+- [ ] Deploy the seven production verifier programs to devnet and point the pool at them instead of the demo verifier.
+- [ ] Execute and record a complete Phantom-driven devnet path: connect → deposit → private settlement → withdrawal, with Explorer links in the UI.
+- [ ] Add GitHub Actions for workspace tests, web build, Rust tests, reproducible program binaries, and secret scanning.
+
+### P1 — sponsor and production hardening
+
+- [ ] Obtain direct Pyth entitlement for the canonical AAPLx feed so the live gate no longer needs the disclosed SOL fallback.
+- [ ] Add a real PreStocks asset settlement transaction, not only official catalog/policy enforcement.
+- [ ] Exercise the DBC lifecycle through graduation/migration; evaluate mainnet only after security review.
+- [ ] Audit Token-2022 extension combinations per supported asset and add property/fuzz tests.
+- [ ] Add service health checks, RPC failover, metrics, alerts, and an indexer-lag indicator in the UI.
+
+### P2 — production readiness and product depth
+
+- [ ] Multi-party trusted-setup ceremony and independent circuit/program audit.
+- [ ] Multithreaded browser proving and proof-artifact caching.
+- [ ] Hardware-wallet testing, recovery UX, and encrypted cross-device treasury backup.
+- [ ] Scheduled distributions, multi-asset batches, policy templates, and accountant exports.
+
+## Originality disclosure
+
+Kakure Prime transparently builds on **Kakure**, an Apache-2.0 project by the same author that predates Stocklana. The pre-existing foundation includes the base ZK circuits, FROST custody, pool program, SDK, and private-payment flow. Stocklana work adds Token-2022 equity compatibility, xStocks presets, the official-only PreStocks policy rail, the Pyth settlement-risk gate and server broker, the Meteora DBC receipt/configuration/pool/trade, hosted infrastructure, and the equity-focused judge experience. See [STOCKLANA.md](./STOCKLANA.md) for the detailed disclosure.
 
 ## License
 
-Apache-2.0. See `LICENSE`.
+Apache-2.0. See [LICENSE](./LICENSE).

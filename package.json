@@ -2,7 +2,7 @@
   "name": "kakure",
   "private": true,
   "version": "0.1.0",
-  "description": "Kakure: shielded FROST-multisig treasury on Solana",
+  "description": "Confidential prime brokerage for tokenized equities on Solana",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=22",
