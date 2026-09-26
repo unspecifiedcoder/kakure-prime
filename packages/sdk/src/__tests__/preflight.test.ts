@@ -672,7 +672,7 @@ describe("SelfMintPreflight", () => {
       name: "SelfMintPreflightError",
       reason: "CANDIDATES_EXHAUSTED",
     });
-  }, 120_000);
+  }, 180_000);
 
   it("applies the candidate cap per take rather than across the wallet lifetime", async () => {
     const values = Array.from(

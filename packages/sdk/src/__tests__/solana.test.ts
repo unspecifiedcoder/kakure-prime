@@ -170,12 +170,16 @@ describe("solana/txBuilder (native kakure_pool wire format: borsh u8 tag + field
 
   it("rejects a ProofBundle whose circuitId does not match the instruction being built", () => {
     expect(() =>
-      builder.transfer(bundle(CircuitId.Deposit), {
-        pool: builder.poolAddress(),
-        nullifier: PublicKey.default,
-        payer: Keypair.generate().publicKey,
-        verifierProgram: PublicKey.default,
-      }),
+      builder.transfer(
+        bundle(CircuitId.Deposit),
+        {
+          pool: builder.poolAddress(),
+          nullifier: PublicKey.default,
+          payer: Keypair.generate().publicKey,
+          verifierProgram: PublicKey.default,
+        },
+        poolFixture(),
+      ),
     ).toThrow();
   });
 
@@ -183,12 +187,16 @@ describe("solana/txBuilder (native kakure_pool wire format: borsh u8 tag + field
     const bad = bundle(CircuitId.Transfer);
     (bad.publicInputs as Uint8Array[]).pop();
     expect(() =>
-      builder.transfer(bad, {
-        pool: builder.poolAddress(),
-        nullifier: PublicKey.default,
-        payer: Keypair.generate().publicKey,
-        verifierProgram: PublicKey.default,
-      }),
+      builder.transfer(
+        bad,
+        {
+          pool: builder.poolAddress(),
+          nullifier: PublicKey.default,
+          payer: Keypair.generate().publicKey,
+          verifierProgram: PublicKey.default,
+        },
+        poolFixture(),
+      ),
     ).toThrow();
   });
 
@@ -353,11 +361,12 @@ describe("solana/txBuilder (native kakure_pool wire format: borsh u8 tag + field
     // Put `root` at a specific, non-default ring slot so root_index isn't just the fixture's
     // default cursor-1 by coincidence.
     const rootIndex = 200;
-    (pf.roots as Uint8Array[])[rootIndex] = root;
-    pf.rootCursor = (rootIndex + 1) % 256;
-    expect(rootIndexFor(pf, root)).toBe(rootIndex);
+    const roots = [...pf.roots];
+    roots[rootIndex] = root;
+    const rootedPool = { ...pf, roots, rootCursor: (rootIndex + 1) % 256 };
+    expect(rootIndexFor(rootedPool, root)).toBe(rootIndex);
 
-    const ix = builder.transfer(b, { pool, nullifier, payer, verifierProgram }, pf)[1]!;
+    const ix = builder.transfer(b, { pool, nullifier, payer, verifierProgram }, rootedPool)[1]!;
     const data = Buffer.from(ix.data);
     let off = 0;
     expect(data[off]).toBe(5); // tag

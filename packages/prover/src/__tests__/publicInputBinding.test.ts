@@ -17,7 +17,10 @@ describe("every public input is bound by the proof", () => {
     const p = artifactPaths(name);
     const pwPath = p.ccs.replace(/\.ccs$/, ".pw");
     const proofPath = p.ccs.replace(/\.ccs$/, ".proof");
-    if (!existsSync(pwPath) || !existsSync(proofPath)) continue;
+    if (!existsSync(pwPath) || !existsSync(proofPath)) {
+      it.skip(`${name}: fixtures unavailable`, () => {});
+      continue;
+    }
     const pw = readFileSync(pwPath);
     const n = pw.readUInt32BE(0);
 

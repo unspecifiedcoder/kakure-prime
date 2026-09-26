@@ -10,7 +10,7 @@ import { multisigOwner, deriveGroupViewKeyFromSecret, type MultisigNoteView } fr
 import { combineGroupViewContributions } from "@kakure/sdk/tss";
 import type { MerkleWitnessSource } from "@kakure/sdk/solana";
 import { computeNullifier } from "@kakure/sdk";
-import { CircuitId } from "@kakure/sdk/tx";
+import { CircuitId, type ProofBundle } from "@kakure/sdk/tx";
 import { nativeProverPort } from "@kakure/prover";
 import { CoordinatorClient } from "../../coordinatorClient.js";
 import { FakeCoordinator } from "../../__tests__/fakes/fakeCoordinator.js";
@@ -24,6 +24,7 @@ import {
   buildTransferMultisigInputsFromProposal,
   createTransferMultisigProposal,
 } from "../transferMultisigProposal.js";
+import { deriveSessionKeyFromGvsDecimal } from "../../crypto/sessionSeal.js";
 
 /**
  * Opt-in (env-gated) end-to-end run of the SAME flow as `transferMultisigFlow.test.ts`, but
@@ -146,19 +147,17 @@ describe("real transfer_multisig flow through the REAL @kakure/prover (opt-in)",
 
       const recipientInPub = scalarBaseMul(7n);
 
+      const gvs = await combineGroupViewContributions(
+        [...dkgA.viewContributions].map(([id, r]) => ({ index: Number(id), r })),
+        [...gpk],
+      );
+      const sessionKey = deriveSessionKeyFromGvsDecimal(gvs.toString(), sessionId);
+
       const assembled = await assembleTransferMultisig(
         { merkle: zeroPathWitnessSource(), counters: new InMemoryEphemeralCounterStore() },
         {
           gpk: [...gpk],
-          v: (
-            await deriveGroupViewKeyFromSecret(
-              await combineGroupViewContributions(
-                [...dkgA.viewContributions].map(([id, r]) => ({ index: Number(id), r })),
-                [...gpk],
-              ),
-              [...gpk],
-            )
-          ).v,
+          v: (await deriveGroupViewKeyFromSecret(gvs, [...gpk])).v,
           memberId: dkgA.myId,
           compliancePk: [...COMPLIANCE_PK],
           oldNoteView,
@@ -170,12 +169,13 @@ describe("real transfer_multisig flow through the REAL @kakure/prover (opt-in)",
       );
 
       const proposalId = "real-transfer-multisig-1";
-      await createTransferMultisigProposal(new CoordinatorClient(url), sessionId, proposalId, assembled);
+      await createTransferMultisigProposal(new CoordinatorClient(url), sessionId, sessionKey, proposalId, assembled);
 
       await Promise.all([
         signProposal({
           coordinator: new CoordinatorClient(url),
           sessionId,
+          sessionKey,
           proposalId,
           myId: dkgA.myId,
           mySecretShare: dkgA.mySecretShare,
@@ -186,6 +186,7 @@ describe("real transfer_multisig flow through the REAL @kakure/prover (opt-in)",
         signProposal({
           coordinator: new CoordinatorClient(url),
           sessionId,
+          sessionKey,
           proposalId,
           myId: dkgB.myId,
           mySecretShare: dkgB.mySecretShare,
@@ -196,9 +197,10 @@ describe("real transfer_multisig flow through the REAL @kakure/prover (opt-in)",
       ]);
 
       const prover = nativeProverPort({ artifactsDir: workDir });
-      const result = await executeProposal({
+      const result = await executeProposal<ProofBundle>({
         coordinator: new CoordinatorClient(url),
         sessionId,
+        sessionKey,
         proposalId,
         gpk,
         threshold,

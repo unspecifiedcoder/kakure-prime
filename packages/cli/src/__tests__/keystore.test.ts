@@ -43,7 +43,8 @@ describe("keystore", () => {
     const path = join(dir, "keystore.json");
     await writeKeystoreFile(path, kp, "hunter2");
     const st = await stat(path);
-    expect(st.mode & 0o777).toBe(0o600);
+    // Windows does not expose POSIX permission bits through stat/chmod.
+    if (process.platform !== "win32") expect(st.mode & 0o777).toBe(0o600);
     const recovered = await readKeystoreFile(path, "hunter2");
     expect(recovered.publicKey.toBase58()).toBe(kp.publicKey.toBase58());
   });

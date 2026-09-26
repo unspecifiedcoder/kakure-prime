@@ -6,8 +6,10 @@ export default defineConfig({
     setupFiles: ["./src/__tests__/setup.ts"],
     testTimeout: 60000,
     // The dev sandbox runs every workstream's tests concurrently and is memory-constrained; a full worker
-    // pool here has hit ENOMEM crashing the whole run. One worker is slower but reliable.
+    // pool here has hit ENOMEM crashing the whole run. Two non-isolated workers keep the CPU-bound suite
+    // below per-test deadlines without recreating that memory pressure.
     pool: "forks",
-    poolOptions: { forks: { singleFork: true } },
+    maxWorkers: 2,
+    isolate: false,
   },
 });

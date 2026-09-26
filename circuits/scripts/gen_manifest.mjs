@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Regenerates circuits/manifest.json from the built .vk files under circuits/target/.
 //
 // circuit_id and public_input_count are the frozen interface values from the kakure master
