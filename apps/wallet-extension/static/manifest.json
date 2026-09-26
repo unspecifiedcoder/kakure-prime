@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Kakure Wallet",
+  "short_name": "Kakure",
+  "version": "0.1.0",
+  "description": "Self-custody Solana wallet for Kakure private-market settlement.",
+  "action": {
+    "default_title": "Kakure Wallet",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "alarms"],
+  "host_permissions": ["https://api.devnet.solana.com/*", "https://api.mainnet-beta.solana.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
+      "js": ["inpage.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
+      "js": ["bridge.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

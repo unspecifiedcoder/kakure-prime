@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kakure Wallet</title><link rel="stylesheet" href="wallet.css"></head>
+<body>
+  <main>
+    <header><div class="brand"><span class="mark">K</span><div><strong>Kakure Wallet</strong><small>PRIVATE-MARKET CUSTODY</small></div></div><span id="network" class="network">DEVNET</span></header>
+    <section class="hero"><span class="eyebrow">SOLANA · SELF CUSTODY</span><h1>Public outside.<br><em>Private inside.</em></h1><p>Your signing key stays encrypted in this extension. Kakure services never receive it.</p></section>
+    <section id="onboarding" hidden>
+      <form id="create" class="panel"><span class="step">CREATE VAULT</span><label>Passphrase<input id="create-passphrase" type="password" minlength="12" required autocomplete="new-password"></label><label>Confirm passphrase<input id="confirm-passphrase" type="password" minlength="12" required autocomplete="new-password"></label><button type="submit">Create Kakure Wallet <b>→</b></button><small>Use at least 12 characters. Kakure cannot recover it.</small></form>
+    </section>
+    <section id="locked" hidden>
+      <form id="unlock" class="panel"><span class="step">ENCRYPTED VAULT · LOCKED</span><h2>Welcome back.</h2><label>Passphrase<input id="unlock-passphrase" type="password" required autocomplete="current-password"></label><button type="submit">Unlock wallet <b>→</b></button><small>Automatically locks after 15 minutes.</small></form>
+    </section>
+    <section id="wallet" hidden>
+      <div class="balance"><span>AVAILABLE</span><strong id="balance">—</strong><small>SOL · ACTIVE NETWORK</small></div>
+      <div class="panel account"><span class="step">SELF-CUSTODY ADDRESS</span><div class="address-row"><code id="address">—</code><button id="copy" class="icon" type="button">COPY</button></div><label>Network<select id="network-select"><option value="devnet">Solana Devnet</option><option value="mainnet-beta">Solana Mainnet</option></select></label><div class="privacy-flow"><span>WALLET</span><b>→</b><span>SHIELD</span><b>→</b><span>PRIVATE POSITION</span></div><button id="lock" class="secondary" type="button">Lock wallet</button></div>
+      <button id="send-toggle" type="button">Send SOL <b>→</b></button>
+      <form id="send-panel" class="panel" hidden><span class="step">NEW SOLANA TRANSFER</span><label>Recipient<input id="recipient" required autocomplete="off" placeholder="Solana address"></label><label>Amount in SOL<input id="amount" type="number" min="0.000001" step="0.000001" required placeholder="0.01"></label><button type="submit">Review transfer <b>→</b></button></form>
+      <section id="send-review" class="panel review" hidden><span class="step">REVIEW TRANSACTION</span><h2>Confirm this transfer.</h2><p><strong id="review-amount">—</strong> SOL</p><code id="review-recipient">—</code><div class="warning">This sends a public Solana transaction on the selected network.</div><button id="send-confirm" type="button">Confirm & send <b>→</b></button><button id="send-cancel" class="secondary" type="button">Cancel</button></section>
+      <section id="send-success" class="panel" hidden><span class="step">TRANSACTION BROADCAST</span><h2>Submitted to Solana.</h2><p>Track confirmation independently in Explorer.</p><a id="explorer-link" target="_blank" rel="noreferrer">Open in Solana Explorer ↗</a></section>
+    </section>
+    <p id="message" role="status"></p>
+    <footer><span><i></i> Local encryption</span><span><i></i> Review before signing</span><span><i></i> Auto-lock</span></footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
