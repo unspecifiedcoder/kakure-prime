@@ -5,7 +5,7 @@
  * worker entry) without duplicating the decode/compress/witness-execution logic.
  */
 import { type CompiledCircuit } from "@noir-lang/noir_js";
-import { executeWitness, decodePublicWitness, decodeProof, compressProof, circuitNameFor } from "@kakure/prover";
+import { executeWitness, decodePublicWitness, compressProof, circuitNameFor } from "@kakure/prover";
 import { CircuitId, PUBLIC_INPUT_COUNT, type ProofBundle } from "@kakure/sdk/tx";
 
 /** The Go wasm module's exported entry point, once instantiated (`js.Global().Set("kakureProve", ...)`
@@ -54,10 +54,7 @@ export async function runProveCore(args: RunProveCoreArgs): Promise<ProofBundle>
     );
   }
 
-  // decodeProof both validates rawProof's shape and is what compressProof re-decodes internally;
-  // calling it here too is redundant work but cheap (388 bytes) and gives a clearer error message
-  // if the raw proof is malformed before compressProof's own (identical) parse.
-  decodeProof(rawProof);
+  // compressProof validates and decodes the raw proof; avoid doing the identical parse twice.
   const compressedProof = compressProof({ proof: rawProof, publicInputs });
   return { circuitId: args.circuit, proof: compressedProof, publicInputs };
 }

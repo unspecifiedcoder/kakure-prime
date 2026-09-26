@@ -129,6 +129,16 @@ point.
    (`kat_multisig_transfer_accepts`) and `withdraw` (`test_withdraw_kat`), asserting the standard I-1
    public-input layout and a 192-byte compressed proof for each. Green.
 
+### Repeat-proof fast path
+
+The production integration keeps one Worker and one Go runtime alive per prover instance. Each
+circuit's ACIR, constraint system, and 7-30MB proving key are fetched, transferred, and deserialized
+exactly once. Later proofs send only inputs and witness data to the Worker; the large key is neither
+downloaded, structured-cloned, nor parsed again. WASM and circuit artifacts also use versioned
+browser Cache Storage, so returning users avoid the network download. This does not change
+Groth16's single-core proving cost, but it removes the avoidable setup work around it and keeps the
+UI responsive.
+
 ## Correctness
 
 Every prove call in this spike -- Node/wasm and Chromium/wasm, all three circuits, both before and

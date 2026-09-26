@@ -28,7 +28,7 @@
  * realm; the main thread never needs `Go` defined.
  */
 import { CircuitId, PUBLIC_INPUT_COUNT, type ProofBundle, type ProverPort } from "@kakure/sdk/tx";
-import { instantiateWasm, runProveCore, type KakureProveFn, type ProveCoreStage } from "./proveCore.js";
+import { instantiateWasm, runProveCore, type ProveCoreStage } from "./proveCore.js";
 
 /** The bytes `kakureProve` needs for one circuit, however the caller wants to fetch them. Use
  * `cachedFetchBytes` (`cache.ts`) to avoid re-downloading the (7-30MB) `.pk` on every visit. */
@@ -50,8 +50,8 @@ export interface WasmProverOptions {
   readonly wasmBytes: BufferSource;
   /** Which circuits this deployment ships wasm artifacts for -- `capabilities()` reports exactly these. */
   readonly circuits: readonly CircuitId[];
-  /** Fetches (or reads) the artifacts `kakureProve` needs for one circuit. Called once per `prove()`
-   * call -- the caller is free to cache across calls (`cachedFetchBytes` does this for you). */
+  /** Fetches (or reads) one circuit's artifacts. Called once per circuit per prover instance;
+   * the parsed circuit and key remain resident for all later proofs. */
   artifactsFor(circuit: CircuitId): Promise<WasmCircuitArtifacts>;
   /** Override for tests: defaults to `globalThis.Go`, which Go's `wasm_exec.js` glue sets. Ignored
    * in worker mode (the worker always uses its own realm's `globalThis.Go`). */
@@ -79,6 +79,35 @@ export function wasmProverPort(opts: WasmProverOptions): ProverPort {
 
 function wasmProverPortInline(opts: WasmProverOptions): ProverPort {
   let ready: Promise<void> | undefined;
+  const prepared = new Map<CircuitId, Promise<string>>();
+
+  async function ensurePrepared(circuit: CircuitId): Promise<string> {
+    let preparation = prepared.get(circuit);
+    if (!preparation) {
+      preparation = (async () => {
+        ready ??= instantiateWasm(opts.wasmBytes, opts.goCtor);
+        await ready;
+        const prepare = (
+          globalThis as unknown as {
+            kakurePrepareCircuit?: (
+              id: string,
+              acirJson: string,
+              ccsBytes: Uint8Array,
+              pkBytes: Uint8Array,
+            ) => Promise<void>;
+          }
+        ).kakurePrepareCircuit;
+        if (!prepare) throw new Error("wasmProverPort: kakurePrepareCircuit was not registered by the wasm module");
+        opts.onProgress?.({ circuit, stage: "loading-pk" });
+        const { acirJson, ccsBytes, pkBytes } = await opts.artifactsFor(circuit);
+        await prepare(String(circuit), acirJson, ccsBytes, pkBytes);
+        return acirJson;
+      })();
+      preparation.catch(() => prepared.delete(circuit));
+      prepared.set(circuit, preparation);
+    }
+    return preparation;
+  }
 
   return {
     async capabilities() {
@@ -86,24 +115,24 @@ function wasmProverPortInline(opts: WasmProverOptions): ProverPort {
     },
 
     async prove(circuit: CircuitId, inputs: Record<string, unknown>): Promise<ProofBundle> {
-      ready ??= instantiateWasm(opts.wasmBytes, opts.goCtor);
-      await ready;
-
-      const kakureProve = (globalThis as unknown as { kakureProve?: KakureProveFn }).kakureProve;
-      if (!kakureProve) {
-        throw new Error("wasmProverPort: kakureProve was not registered by the wasm module");
-      }
-
-      opts.onProgress?.({ circuit, stage: "loading-pk" });
-      const { acirJson, ccsBytes, pkBytes } = await opts.artifactsFor(circuit);
+      const acirJson = await ensurePrepared(circuit);
+      const provePrepared = (
+        globalThis as unknown as {
+          kakureProvePrepared?: (
+            id: string,
+            witnessGz: Uint8Array,
+          ) => Promise<{ proof: Uint8Array; pw: Uint8Array }>;
+        }
+      ).kakureProvePrepared;
+      if (!provePrepared) throw new Error("wasmProverPort: kakureProvePrepared was not registered by the wasm module");
 
       return runProveCore({
         circuit,
         inputs,
         acirJson,
-        ccsBytes,
-        pkBytes,
-        kakureProve,
+        ccsBytes: new Uint8Array(),
+        pkBytes: new Uint8Array(),
+        kakureProve: (_acirJson, witnessGz) => provePrepared(String(circuit), witnessGz),
         onProgress: (stage) => opts.onProgress?.({ circuit, stage }),
       });
     },
@@ -116,11 +145,18 @@ interface PendingRequest {
   circuit: CircuitId;
 }
 
+interface PendingPreparation {
+  resolve(): void;
+  reject(err: Error): void;
+}
+
 function wasmProverPortViaWorker(opts: WasmProverOptions): ProverPort {
   let worker: Worker | undefined;
   let ready: Promise<void> | undefined;
   let nextRequestId = 0;
   const pending = new Map<number, PendingRequest>();
+  const pendingPreparations = new Map<number, PendingPreparation>();
+  const prepared = new Map<CircuitId, Promise<void>>();
 
   function ensureWorker(): Promise<void> {
     ready ??= new Promise<void>((resolveReady, rejectReady) => {
@@ -131,6 +167,7 @@ function wasmProverPortViaWorker(opts: WasmProverOptions): ProverPort {
       w.onmessage = (ev: MessageEvent) => {
         const msg = ev.data as
           | { type: "ready" }
+          | { type: "prepared"; requestId: number }
           | { type: "progress"; requestId: number; circuit: CircuitId; stage: ProveCoreStage }
           | { type: "result"; requestId: number; proof: ArrayBuffer; publicInputs: ArrayBuffer[] }
           | { type: "error"; requestId: number; message: string };
@@ -143,10 +180,18 @@ function wasmProverPortViaWorker(opts: WasmProverOptions): ProverPort {
           opts.onProgress?.({ circuit: msg.circuit, stage: msg.stage });
           return;
         }
+        if (msg.type === "prepared") {
+          pendingPreparations.get(msg.requestId)?.resolve();
+          pendingPreparations.delete(msg.requestId);
+          return;
+        }
         const req = pending.get(msg.requestId);
         if (msg.type === "error") {
           if (msg.requestId === -1) {
             rejectReady(new Error(msg.message));
+          } else if (pendingPreparations.has(msg.requestId)) {
+            pendingPreparations.get(msg.requestId)?.reject(new Error(msg.message));
+            pendingPreparations.delete(msg.requestId);
           } else {
             req?.reject(new Error(msg.message));
             pending.delete(msg.requestId);
@@ -168,28 +213,50 @@ function wasmProverPortViaWorker(opts: WasmProverOptions): ProverPort {
     return ready;
   }
 
+
+  function ensurePrepared(circuit: CircuitId): Promise<void> {
+    let preparation = prepared.get(circuit);
+    if (!preparation) {
+      preparation = (async () => {
+        await ensureWorker();
+        if (!worker) throw new Error("wasmProverPort: worker failed to initialize");
+        opts.onProgress?.({ circuit, stage: "loading-pk" });
+        const { acirJson, ccsBytes, pkBytes } = await opts.artifactsFor(circuit);
+        const requestId = nextRequestId++;
+        const result = new Promise<void>((resolve, reject) => {
+          pendingPreparations.set(requestId, { resolve, reject });
+        });
+        // Clone once, then transfer ownership to the worker. The Cache Storage/in-memory copies
+        // remain reusable, while the 7-30MB key is never structured-cloned for later proofs.
+        const ccsBuffer = ccsBytes.slice().buffer;
+        const pkBuffer = pkBytes.slice().buffer;
+        worker.postMessage(
+          { type: "prepare", requestId, circuit, acirJson, ccsBytes: ccsBuffer, pkBytes: pkBuffer },
+          [ccsBuffer, pkBuffer],
+        );
+        await result;
+      })();
+      // A transient fetch/worker failure must remain retryable.
+      preparation.catch(() => prepared.delete(circuit));
+      prepared.set(circuit, preparation);
+    }
+    return preparation;
+  }
+
   return {
     async capabilities() {
       return { circuits: opts.circuits, environment: "wasm" as const };
     },
 
     async prove(circuit: CircuitId, inputs: Record<string, unknown>): Promise<ProofBundle> {
-      await ensureWorker();
+      await ensurePrepared(circuit);
       if (!worker) throw new Error("wasmProverPort: worker failed to initialize");
-
-      opts.onProgress?.({ circuit, stage: "loading-pk" });
-      const { acirJson, ccsBytes, pkBytes } = await opts.artifactsFor(circuit);
 
       const requestId = nextRequestId++;
       const result = new Promise<ProofBundle>((resolve, reject) => {
         pending.set(requestId, { resolve, reject, circuit });
       });
-      // Not a zero-copy transfer: `ccsBytes`/`pkBytes` are structured-cloned rather than passed in
-      // a transfer list, because `artifactsFor` (e.g. `cachedFetchBytes`) may hand back a buffer
-      // it intends to reuse across calls -- transferring would silently detach it. A production
-      // integration that always re-fetches (or clones before caching) could transfer instead to
-      // avoid copying the 7-30MB `.pk` on every call.
-      worker.postMessage({ type: "prove", requestId, circuit, inputs, acirJson, ccsBytes, pkBytes });
+      worker.postMessage({ type: "prove", requestId, circuit, inputs });
       return result;
     },
   };

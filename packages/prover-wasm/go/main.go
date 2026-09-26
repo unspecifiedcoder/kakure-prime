@@ -33,6 +33,17 @@ import (
 
 type acirT = acir.ACIR[*bn254.BN254Field, constraint.U64]
 
+type preparedCircuit struct {
+	acir acirT
+	ccs  constraint.ConstraintSystem
+	pk   groth16.ProvingKey
+}
+
+// preparedCircuits keeps the expensive, immutable circuit/key deserialization alive for the
+// lifetime of the worker. A proving key can be tens of megabytes; parsing it for every proof was
+// needless first-order latency and allocation pressure.
+var preparedCircuits = make(map[string]*preparedCircuit)
+
 // jsBytes copies a JS Uint8Array argument into a Go []byte.
 func jsBytes(v js.Value) []byte {
 	length := v.Get("length").Int()
@@ -109,12 +120,60 @@ func doProve(args []js.Value) (proofBytes []byte, pwBytes []byte, err error) {
 		return nil, nil, fmt.Errorf("read proving key: %w", err)
 	}
 
-	witness, err := getWitnessFromBytes(&loadedAcir, witnessBytes, ecc_bn254.ID.ScalarField())
+	return proveWithPrepared(&preparedCircuit{acir: loadedAcir, ccs: ccs, pk: pk}, witnessBytes)
+}
+
+func prepareCircuit(this js.Value, args []js.Value) any {
+	return promise(func() (js.Value, error) {
+		if len(args) != 4 {
+			return js.Undefined(), fmt.Errorf("expected 4 arguments (id, acirJson, ccsBytes, pkBytes), got %d", len(args))
+		}
+		id := args[0].String()
+		if id == "" {
+			return js.Undefined(), fmt.Errorf("circuit id must not be empty")
+		}
+		var loadedAcir acirT
+		if err := json.Unmarshal([]byte(args[1].String()), &loadedAcir); err != nil {
+			return js.Undefined(), fmt.Errorf("load ACIR: %w", err)
+		}
+		ccs := groth16.NewCS(ecc.BN254)
+		if _, err := ccs.ReadFrom(bytes.NewReader(jsBytes(args[2]))); err != nil {
+			return js.Undefined(), fmt.Errorf("read CCS: %w", err)
+		}
+		pk := groth16.NewProvingKey(ecc.BN254)
+		if _, err := pk.ReadFrom(bytes.NewReader(jsBytes(args[3]))); err != nil {
+			return js.Undefined(), fmt.Errorf("read proving key: %w", err)
+		}
+		preparedCircuits[id] = &preparedCircuit{acir: loadedAcir, ccs: ccs, pk: pk}
+		return js.Undefined(), nil
+	})
+}
+
+func provePrepared(this js.Value, args []js.Value) any {
+	return promise(func() (js.Value, error) {
+		if len(args) != 2 {
+			return js.Undefined(), fmt.Errorf("expected 2 arguments (id, witnessGz), got %d", len(args))
+		}
+		id := args[0].String()
+		prepared, ok := preparedCircuits[id]
+		if !ok {
+			return js.Undefined(), fmt.Errorf("circuit %q has not been prepared", id)
+		}
+		proofBytes, pwBytes, err := proveWithPrepared(prepared, jsBytes(args[1]))
+		if err != nil {
+			return js.Undefined(), err
+		}
+		return proofResult(proofBytes, pwBytes), nil
+	})
+}
+
+func proveWithPrepared(prepared *preparedCircuit, witnessBytes []byte) ([]byte, []byte, error) {
+	witness, err := getWitnessFromBytes(&prepared.acir, witnessBytes, ecc_bn254.ID.ScalarField())
 	if err != nil {
 		return nil, nil, fmt.Errorf("get witness: %w", err)
 	}
 
-	proof, err := groth16.Prove(ccs, pk, witness)
+	proof, err := groth16.Prove(prepared.ccs, prepared.pk, witness)
 	if err != nil {
 		return nil, nil, fmt.Errorf("groth16 prove: %w", err)
 	}
@@ -136,8 +195,38 @@ func doProve(args []js.Value) (proofBytes []byte, pwBytes []byte, err error) {
 	return proofBuf.Bytes(), pwBuf.Bytes(), nil
 }
 
+func promise(fn func() (js.Value, error)) js.Value {
+	handler := js.FuncOf(func(_ js.Value, promiseArgs []js.Value) any {
+		resolve := promiseArgs[0]
+		reject := promiseArgs[1]
+		go func() {
+			value, err := fn()
+			if err != nil {
+				reject.Invoke(jsErrorObject("kakure prover: %v", err))
+				return
+			}
+			resolve.Invoke(value)
+		}()
+		return nil
+	})
+	return js.Global().Get("Promise").New(handler)
+}
+
+func proofResult(proofBytes, pwBytes []byte) js.Value {
+	proofArr := js.Global().Get("Uint8Array").New(len(proofBytes))
+	js.CopyBytesToJS(proofArr, proofBytes)
+	pwArr := js.Global().Get("Uint8Array").New(len(pwBytes))
+	js.CopyBytesToJS(pwArr, pwBytes)
+	result := js.Global().Get("Object").New()
+	result.Set("proof", proofArr)
+	result.Set("pw", pwArr)
+	return result
+}
+
 func main() {
 	js.Global().Set("kakureProve", js.FuncOf(prove))
+	js.Global().Set("kakurePrepareCircuit", js.FuncOf(prepareCircuit))
+	js.Global().Set("kakureProvePrepared", js.FuncOf(provePrepared))
 	// Signal readiness to the host page/Node harness.
 	js.Global().Set("kakureProveReady", true)
 	// Keep the wasm program alive; syscall/js callbacks run on this goroutine's event loop.
