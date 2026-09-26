@@ -13,10 +13,13 @@ beforeEach(() => {
 });
 
 describe("appStore", () => {
-  it("starts disconnected with default local settings", () => {
+  it("starts disconnected with hosted devnet defaults", () => {
     const state = useAppStore.getState();
     expect(state.walletPublicKey).toBeNull();
-    expect(state.settings.indexerUrl).toMatch(/^http:\/\/127\.0\.0\.1:/);
+    expect(state.settings.rpcUrl).toBe("https://api.devnet.solana.com");
+    expect(state.settings.indexerUrl).toBe("https://kakure-prime-indexer.fly.dev");
+    expect(state.settings.coordinatorUrl).toBe("https://kakure-prime-coordinator.fly.dev");
+    expect(state.settings.programId).toBe("HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF");
   });
 
   it("connect()/disconnect() hold wallet+account only in memory", async () => {

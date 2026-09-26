@@ -21,15 +21,16 @@ export interface Settings {
 }
 
 const SETTINGS_KEY = "kakure.web.settings.v1";
+const DEVNET_PROGRAM_ID = "HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF";
 
 function defaultSettings(): Settings {
   return {
-    rpcUrl: "http://127.0.0.1:8899",
-    indexerUrl: "http://127.0.0.1:8788",
-    coordinatorUrl: "http://127.0.0.1:8789",
+    rpcUrl: "https://api.devnet.solana.com",
+    indexerUrl: "https://kakure-prime-indexer.fly.dev",
+    coordinatorUrl: "https://kakure-prime-coordinator.fly.dev",
     helperUrl: "http://127.0.0.1:8787",
     helperToken: "",
-    programId: "",
+    programId: DEVNET_PROGRAM_ID,
   };
 }
 
@@ -37,7 +38,13 @@ function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return defaultSettings();
-    return { ...defaultSettings(), ...(JSON.parse(raw) as Partial<Settings>) };
+    const saved = JSON.parse(raw) as Partial<Settings>;
+    // Migrate the pre-hosted demo defaults without overriding endpoints a user deliberately set.
+    if (saved.rpcUrl === "http://127.0.0.1:8899") saved.rpcUrl = "https://api.devnet.solana.com";
+    if (saved.indexerUrl === "http://127.0.0.1:8788") saved.indexerUrl = "https://kakure-prime-indexer.fly.dev";
+    if (saved.coordinatorUrl === "http://127.0.0.1:8789") saved.coordinatorUrl = "https://kakure-prime-coordinator.fly.dev";
+    if (!saved.programId) saved.programId = DEVNET_PROGRAM_ID;
+    return { ...defaultSettings(), ...saved };
   } catch {
     return defaultSettings();
   }
