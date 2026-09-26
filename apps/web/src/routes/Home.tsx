@@ -121,7 +121,7 @@ export function Home(): JSX.Element {
             Technical walkthrough
           </a>
           <Link className="btn big" to="/wallet">
-            Open Kakure Wallet
+            Get Kakure Wallet extension
           </Link>
           {connected ? (
             <p>
@@ -132,7 +132,7 @@ export function Home(): JSX.Element {
               {connectStatus.kind === "connecting" ? "Connecting wallet…" : "Connect wallet"}
             </button>
           )}
-          {!connected && <span className="muted">Use Kakure Wallet in any browser, or Phantom in Chrome and Brave.</span>}
+          {!connected && <span className="muted">Connect with the Kakure Wallet extension or Phantom.</span>}
           {connectStatus.kind === "error" && <p role="alert">{connectStatus.message}</p>}
         </section>
       </div>

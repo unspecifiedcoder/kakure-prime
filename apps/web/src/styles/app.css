@@ -50,6 +50,10 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
 .topbar nav a { color: var(--ink-2); text-decoration: none; font-size: 0.9375rem; }
 .topbar nav a[aria-current="page"] { color: var(--ink); font-weight: 600; }
 .topbar .spacer { flex: 1; }
+.wallet-connect { display: inline-flex; align-items: center; gap: .45rem; white-space: nowrap; border-color: var(--cobalt); background: var(--cobalt); color: #fff; }
+.wallet-connect:hover:not(:disabled) { background: var(--cobalt-ink); border-color: var(--cobalt-ink); }
+.wallet-connect.connected { background: var(--surface); color: var(--ink); border-color: var(--rule); }
+.wallet-dot { width: .48rem; height: .48rem; border-radius: 50%; background: #65d399; }
 .content { flex: 1; width: 100%; max-width: 1120px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 .footer { border-top: 1px solid var(--rule); padding: 1.25rem 1.5rem; font-size: 0.875rem; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; }
 .footer a { color: var(--ink-2); }
@@ -77,8 +81,21 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
 .wallet-assurance div { min-height: 7rem; padding: 1rem; display: grid; align-content: start; gap: .45rem; border-right: 1px solid var(--rule); }
 .wallet-assurance div:last-child { border-right: 0; }
 .wallet-assurance span { color: var(--ink-3); font-size: .86rem; }
+.extension-page { display: grid; gap: 2rem; }
+.extension-hero { display: grid; grid-template-columns: 1.1fr .7fr; gap: 4rem; align-items: center; padding: 3.5rem 0 2rem; }
+.extension-hero h1 { max-width: 11ch; font-size: clamp(3rem, 6vw, 5.5rem); letter-spacing: -.055em; line-height: .96; }
+.extension-mock { padding: 1.35rem; min-height: 32rem; border: 1px solid #294136; border-radius: 18px; background: radial-gradient(circle at 100% 0,#153426 0,transparent 38%),#07110d; color: #eef5f0; box-shadow: 0 30px 80px #07110d33; }
+.extension-mock-head { display: flex; align-items: center; gap: .7rem; padding-bottom: 1rem; border-bottom: 1px solid #294136; }
+.extension-mock-head>b { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: .55rem; background: #65d399; color: #07110d; font-size: 1.25rem; }
+.extension-mock-head>span { display: grid; font-weight: 750; line-height: 1.1; }.extension-mock-head small { color: #7f9a8a; font: 700 .48rem/1.5 var(--mono); letter-spacing: .1em; }
+.extension-mock-head i { margin-left: auto; padding: .35rem .5rem; border: 1px solid #315240; border-radius: 99px; color: #65d399; font: 800 .52rem/1 var(--mono); font-style: normal; }
+.extension-kicker { display: block; margin-top: 2rem; color: #65d399; font: 750 .55rem/1 var(--mono); letter-spacing: .13em; }
+.extension-mock h2 { margin: .8rem 0 2rem; font-size: 2.5rem; line-height: 1; letter-spacing: -.05em; }.extension-mock h2 em { color: #65d399; font-style: normal; }
+.extension-vault { display: grid; gap: .9rem; padding: 1.2rem; border: 1px solid #2a4437; background: #111d17; }.extension-vault small { color:#7f9a8a; font:700 .55rem/1 var(--mono); letter-spacing:.1em}.extension-vault code{font-size:1.2rem}.extension-vault span{padding:.75rem;background:#0a1510;color:#9eb2a5;font:700 .6rem/1 var(--mono)}
+.extension-install { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }.extension-install ol { margin: 0; padding-left: 1.25rem; color: var(--ink-2); }.extension-install li { padding: .45rem; }
 @media (max-width: 48rem) {
-  .wallet-hero, .wallet-grid, .wallet-assurance { grid-template-columns: 1fr; }
+  .wallet-hero, .wallet-grid, .wallet-assurance, .extension-hero, .extension-install { grid-template-columns: 1fr; }
+  .extension-hero { gap: 2rem; }
   .wallet-privacy-card { grid-column: auto; }
   .wallet-assurance div { border-right: 0; border-bottom: 1px solid var(--rule); }
   .wallet-assurance div:last-child { border-bottom: 0; }

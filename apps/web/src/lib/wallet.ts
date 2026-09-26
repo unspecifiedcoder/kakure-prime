@@ -20,6 +20,14 @@ export interface ConnectedWallet {
   signTransaction<T extends { serialize?: unknown }>(tx: T): Promise<T>;
 }
 
+interface KakureExtensionProvider {
+  isKakure: boolean;
+  publicKey: { toBase58(): string } | null;
+  connect(): Promise<{ publicKey: { toBase58(): string } }>;
+  signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }>;
+  signTransaction<T>(transaction: T): Promise<T>;
+}
+
 let activeWallet: ConnectedWallet | null = null;
 
 export function getActiveWallet(): ConnectedWallet | null {
@@ -98,10 +106,28 @@ export async function connectPhantom(): Promise<ConnectedWallet> {
   };
 }
 
-/** Uses an unlocked Kakure Wallet when present, otherwise falls back to Phantom. */
+export async function connectKakureExtension(): Promise<ConnectedWallet> {
+  const provider = (globalThis as typeof globalThis & { kakure?: KakureExtensionProvider }).kakure;
+  if (!provider?.isKakure) {
+    throw new Error("Kakure Wallet extension was not detected.");
+  }
+  const response = await provider.connect();
+  const publicKey = new PublicKey(response.publicKey.toBase58());
+  return {
+    publicKey,
+    signMessage: async (message) => (await provider.signMessage(message)).signature,
+    signTransaction: (transaction) => provider.signTransaction(transaction),
+  };
+}
+
+/** Prefers the Kakure extension, with Phantom as the wallet-standard fallback. */
 export async function connectPreferredWallet(): Promise<ConnectedWallet> {
   if (activeWallet) return activeWallet;
-  return connectPhantom();
+  const kakure = (globalThis as typeof globalThis & { kakure?: KakureExtensionProvider }).kakure;
+  if (kakure?.isKakure) return connectKakureExtension();
+  const phantom = (globalThis as typeof globalThis & { phantom?: { solana?: { isPhantom?: boolean } } }).phantom?.solana;
+  if (phantom?.isPhantom) return connectPhantom();
+  throw new Error("No wallet extension detected. Install Kakure Wallet or enable Phantom, then reload this page.");
 }
 
 /**
