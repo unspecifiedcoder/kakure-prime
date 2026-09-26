@@ -30,13 +30,15 @@ function circuitAssetName(circuit: CircuitId): "deposit" | "withdraw" {
   throw new Error(`realWasmProver: no wasm artifacts shipped for circuit ${circuit}`);
 }
 
+const ARTIFACT_CACHE = "kakure-prover-beta22-v1";
 let wasmBytesPromise: Promise<ArrayBuffer> | undefined;
 
 function fetchWasmBytes(): Promise<ArrayBuffer> {
-  wasmBytesPromise ??= fetch(WASM_URL).then((res) => {
-    if (!res.ok) throw new Error(`failed to fetch ${WASM_URL}: ${res.status}`);
-    return res.arrayBuffer();
-  });
+  wasmBytesPromise ??= import("@kakure/prover-wasm").then(({ cachedFetchBytes }) =>
+    cachedFetchBytes(WASM_URL, { cacheName: ARTIFACT_CACHE }).then(
+      (bytes) => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer,
+    ),
+  );
   return wasmBytesPromise;
 }
 
@@ -47,13 +49,17 @@ async function fetchArtifacts(circuit: CircuitId): Promise<{ acirJson: string; c
   let pending = artifactCache.get(name);
   if (!pending) {
     pending = (async () => {
+      const { cachedFetchBytes } = await import("@kakure/prover-wasm");
       const [acirJson, ccsBytes, pkBytes] = await Promise.all([
-        fetch(`${CIRCUIT_ASSET_BASE}/${name}.json`).then((r) => r.text()),
-        fetch(`${CIRCUIT_ASSET_BASE}/${name}.ccs`).then((r) => r.arrayBuffer()).then((b) => new Uint8Array(b)),
-        fetch(`${CIRCUIT_ASSET_BASE}/${name}.pk`).then((r) => r.arrayBuffer()).then((b) => new Uint8Array(b)),
+        cachedFetchBytes(`${CIRCUIT_ASSET_BASE}/${name}.json`, { cacheName: ARTIFACT_CACHE }).then((bytes) =>
+          new TextDecoder().decode(bytes),
+        ),
+        cachedFetchBytes(`${CIRCUIT_ASSET_BASE}/${name}.ccs`, { cacheName: ARTIFACT_CACHE }),
+        cachedFetchBytes(`${CIRCUIT_ASSET_BASE}/${name}.pk`, { cacheName: ARTIFACT_CACHE }),
       ]);
       return { acirJson, ccsBytes, pkBytes };
     })();
+    pending.catch(() => artifactCache.delete(name));
     artifactCache.set(name, pending);
   }
   return pending;
@@ -77,21 +83,32 @@ function workerScriptUrl(): Promise<string> {
 /** Builds the real `ProverPort` over `@kakure/prover-wasm`, lazily importing the package itself
  *  (code-split by the bundler, per this file's own doc comment) on first use. */
 export function realWasmProver(opts: RealWasmProverOptions = {}): ProverPort {
-  return {
-    async capabilities() {
-      return { circuits: [CircuitId.Deposit, CircuitId.Withdraw], environment: "wasm" as const };
-    },
-    async prove(circuit, inputs) {
+  let portPromise: Promise<ProverPort> | undefined;
+
+  function getPort(): Promise<ProverPort> {
+    portPromise ??= (async () => {
       const { wasmProverPort } = await import("@kakure/prover-wasm");
-      opts.onProgress?.({ circuit, stage: "loading-pk" });
       const [wasmBytes, workerUrl] = await Promise.all([fetchWasmBytes(), opts.inline ? undefined : workerScriptUrl()]);
-      const port = wasmProverPort({
+      return wasmProverPort({
         wasmBytes,
         circuits: [CircuitId.Deposit, CircuitId.Withdraw],
         artifactsFor: fetchArtifacts,
         ...(opts.onProgress ? { onProgress: opts.onProgress } : {}),
         ...(opts.inline ? {} : { worker: true, workerUrl: workerUrl! }),
       });
+    })();
+    portPromise.catch(() => {
+      portPromise = undefined;
+    });
+    return portPromise;
+  }
+
+  return {
+    async capabilities() {
+      return { circuits: [CircuitId.Deposit, CircuitId.Withdraw], environment: "wasm" as const };
+    },
+    async prove(circuit, inputs) {
+      const port = await getPort();
       return port.prove(circuit, inputs);
     },
   };
