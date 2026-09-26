@@ -1,15 +1,19 @@
-Every ordinary treasury wallet leaks the strategy: positions, rebalances, recipients, and the signer graph. Kakure Prime makes tokenized equity settlement private without making it unaccountable.
+Every Solana treasury reveals the strategy: positions, rebalances, recipients, and who approved them. Kah-koo-ray Prime changes that.
 
-Kakure Wallet is the front door. It creates a Solana signing key locally, encrypts it with scrypt and X Cha Cha Twenty Poly Thirteen Oh Five, and keeps the decrypted key inside this browser session. One wallet can read mainnet assets and enter Kakure's shielded settlement layer. Mainnet execution remains deliberately gated until the programs are audited.
+It starts with Kakure Wallet—a real browser extension, not a wallet page. The extension creates a Solana key locally, encrypts the vault, supports Devnet and Mainnet, and automatically locks. Websites receive a public address, never the private key.
 
-Inside the judge demo, sponsor data is live and every policy fails closed. The PreStocks lane accepts only official assets and verifies their Token Twenty Twenty-Two mints. OpenAI is outside its token-to-mark mandate, so Kakure blocks settlement instead of waving it through.
+The Connect Wallet action stays visible across the product. When Kakure needs a signature, the extension opens a dedicated review window showing the requesting site and the exact kind of request. Nothing is silently signed.
 
-The Apple xStock lane makes Pyth freshness and confidence part of the transaction policy. Missing or stale authenticated data is a hard stop, never a guessed price.
+This is a real wallet path. A funded Kakure Wallet reviews the recipient and amount, signs a Devnet transfer inside the extension, and produces a finalized transaction that anyone can inspect in Solana Explorer.
 
-For an eligible Anthropic position, the fund shields forty-two point five tokens into a private note. An encrypted proposal then collects three of five FROST approvals. The prover verifies authorization, ownership, and compliance before settlement.
+Inside settlement, sponsor data does real work. The Pre Stocks lane accepts only official assets and checks their Token Twenty Twenty-Two mints. If a token moves outside its permitted mark, execution stops.
 
-Authorized signers see the asset, amount, recipient, and approval state. The public chain sees only a commitment, a spent nullifier, and a valid Groth Sixteen proof. No ticker. No amount. No recipient. No signer graph. An independent auditor quorum can selectively disclose when policy requires it.
+The Apple stock lane uses pith market data as a hard freshness and confidence gate. Missing or stale data means no settlement—not a guessed price.
 
-This is connected to deployed Solana programs and a real Meteora Dynamic Bonding Curve receipt market. The curve decays from a one percent discovery fee to twenty-five basis points, graduates to DAMM version two, and already has a finalized devnet trade that anyone can inspect.
+For an eligible position, the fund creates a private note. An encrypted proposal collects three of five frost approvals. The prover verifies ownership, authorization, and policy before the state can move.
 
-Kakure Prime is the missing institutional rail for tokenized equities: private operations, threshold governance, verifiable settlement, and accountable disclosure. Hide the strategy, not accountability.
+Authorized signers see the asset, amount, recipient, and approval state. The public chain sees a commitment, a spent nullifier, and proof—no ticker, no amount, no recipient, and no signer graph. A separate auditor quorum enables controlled disclosure when policy requires it.
+
+The private rail is also connected to deployed Solana programs and a real Mee-tee-or-ah bonding-curve market.
+
+Kah-koo-ray Prime gives tokenized equities private operations, threshold governance, and accountable settlement. Hide the strategy—not accountability.

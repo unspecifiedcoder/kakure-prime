@@ -19,14 +19,14 @@
 | Experience | Link |
 |---|---|
 | Live product | [kakure-prime.vercel.app](https://kakure-prime.vercel.app/) |
-| Kakure Wallet | [Open the encrypted browser wallet](https://kakure-prime.vercel.app/#/wallet) |
+| Kakure Wallet | [Download the browser extension](https://kakure-prime.vercel.app/#/wallet) |
 | 60-second judge walkthrough | [Launch guided demo](https://kakure-prime.vercel.app/#/demo) |
 | Pitch video | [Watch the pitch](https://kakure-prime.vercel.app/pitch-video.html) |
 | Technical walkthrough | [Watch the technical demo](https://kakure-prime.vercel.app/demo-video.html) |
 | Stocklana submission brief | [SUBMISSION.md](./SUBMISSION.md) |
 | Build/originality disclosure | [STOCKLANA.md](./STOCKLANA.md) |
 
-The fastest judging path is: open the guided demo, select an official PreStocks asset, inspect the live market-risk gate, advance a 3-of-5 private settlement, then open the linked Meteora pool and finalized trade on Solana Explorer.
+The fastest judging path is: watch the pitch for a real Kakure Wallet-signed Devnet transfer and finalized Explorer evidence, then open the guided demo to inspect the PreStocks and Pyth gates and advance a clearly labeled 3-of-5 private-settlement simulation.
 
 ## The problem
 
@@ -53,7 +53,8 @@ Kakure Prime gives funds, DAOs, family offices, and global teams a confidential 
 | Meteora DBC | Traded on devnet | [Pool](https://explorer.solana.com/address/58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW?cluster=devnet) · [finalized buy](https://explorer.solana.com/tx/57ro5JMwkSZaMM15DjBrCXkUoxKtVvfRkJbYAVRHZzz6TKGdTivqKvDiLsGh22FroEBBbXrdQzjuRw6Cr368y1to?cluster=devnet) |
 | Hosted judge walkthrough | Live | Sponsor/deployment evidence is live; the five settlement clicks are intentionally simulated |
 | Zero-install browser proving | Live devnet bundle | Deposit/withdraw use the real worker-based Go/gnark WASM prover with persistent artifact caching, prepared-circuit reuse, and a SHA-256-pinned development artifact bundle |
-| Kakure Wallet | Working in browser | Encrypted local Solana signer, lock/unlock, encrypted backup, network-separated balance reads, and direct Kakure account derivation |
+| Kakure Wallet extension | Working | Manifest V3 provider injection, encrypted local signer, 15-minute auto-lock, Devnet/Mainnet separation, explicit transaction review, real SOL broadcast, and Explorer handoff |
+| Wallet-signed Devnet transfer | Finalized and recorded | The pitch shows the extension creating, reviewing, signing, broadcasting, and opening the transaction in Solana Explorer |
 
 The full cryptographic flow runs end to end on a local validator. The hosted walkthrough is designed for reliable judging without an 80-second proof wait or a local prover installation; it labels its simulated settlement clicks in the UI.
 
@@ -213,7 +214,8 @@ just e2e-scenario
 ### P0 — complete the undeniable hosted transaction
 
 - [ ] Deploy the seven production verifier programs to devnet and point the pool at them instead of the demo verifier.
-- [ ] Execute and record a complete Kakure Wallet devnet path: connect → deposit → private settlement → withdrawal, with Explorer links in the UI.
+- [x] Execute and record a standard Kakure Wallet Devnet transfer with review, local signing, and finalized Explorer evidence.
+- [ ] Execute and record the complete private pool path: deposit → proof-backed private settlement → withdrawal, with Explorer links in the UI.
 - [ ] Add GitHub Actions for workspace tests, web build, Rust tests, reproducible program binaries, and secret scanning.
 
 ### P1 — sponsor and production hardening
