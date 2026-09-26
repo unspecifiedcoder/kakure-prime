@@ -44,6 +44,7 @@ jobs:
           corepack enable
           corepack prepare pnpm@10.24.0 --activate
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build
       - run: pnpm typecheck
       - name: Unit and component tests
         run: >-
@@ -59,7 +60,6 @@ jobs:
           --filter @kakure/indexer
           --filter @kakure/web
           test
-      - run: pnpm build
 
   rust:
     name: Rust workspace
