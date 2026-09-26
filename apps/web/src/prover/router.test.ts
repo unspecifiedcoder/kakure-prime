@@ -19,6 +19,12 @@ describe("proverFor router (ws-J routing: real wasm for deposit/withdraw, helper
     expect(caps.circuits).toContain(CircuitId.Withdraw);
   });
 
+  it("reuses one browser runtime across separate deposit and withdraw actions", () => {
+    const deposit = proverFor(CircuitId.Deposit, helperOpts);
+    const withdraw = proverFor(CircuitId.Withdraw, helperOpts);
+    expect(deposit).toBe(withdraw);
+  });
+
   it("routes TransferMultisig to the helper prover, not wasm (helper unreachable in this test is fine -- proves it isn't silently using wasm)", async () => {
     const port = proverFor(CircuitId.TransferMultisig, helperOpts);
     await expect(port.capabilities()).rejects.toThrow(/Kakure Helper/);
