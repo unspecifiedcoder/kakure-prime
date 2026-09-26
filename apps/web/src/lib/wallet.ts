@@ -15,6 +15,10 @@ export interface ConnectedWallet {
  * demand, a message signature -- it never sees or asks for a seed phrase.
  */
 export async function connectPhantom(): Promise<ConnectedWallet> {
+  const injected = (globalThis as { phantom?: { solana?: { isPhantom?: boolean } } }).phantom?.solana;
+  if (!injected?.isPhantom) {
+    throw new Error("Phantom was not detected. Open this site in Chrome or Brave with the Phantom extension enabled.");
+  }
   const adapter = new PhantomWalletAdapter();
   await adapter.connect();
   if (!adapter.publicKey) {

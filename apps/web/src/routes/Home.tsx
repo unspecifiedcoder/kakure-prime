@@ -129,6 +129,7 @@ export function Home(): JSX.Element {
               {connectStatus.kind === "connecting" ? "Waiting for Phantom…" : "Connect Phantom wallet"}
             </button>
           )}
+          {!connected && <span className="muted">Requires the Phantom extension in Chrome or Brave.</span>}
           {connectStatus.kind === "error" && <p role="alert">{connectStatus.message}</p>}
         </section>
       </div>
