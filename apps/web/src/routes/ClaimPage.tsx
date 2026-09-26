@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { CircuitId } from "@kakure/sdk/tx";
 import { decodeClaimToken } from "../lib/claimToken.js";
 import { scanSingleKey, type SingleKeyScanResult } from "../lib/singleKeyScan.js";
-import { connectPhantom, deriveAccount, type ConnectedWallet } from "../lib/wallet.js";
+import { connectPreferredWallet, deriveAccount, type ConnectedWallet } from "../lib/wallet.js";
 import { findClaimableNotes, withdrawClaimedNote } from "../lib/claimFlows.js";
 import { browserEphemeralCounterStore } from "../lib/ephemeralCounters.js";
 import { prewarmBrowserProver, proverFor } from "../prover/router.js";
@@ -101,7 +101,7 @@ export function ClaimPage(): JSX.Element {
     if (!claim) return;
     setStatus({ kind: "connecting" });
     try {
-      const w = await connectPhantom();
+      const w = await connectPreferredWallet();
       setWallet(w);
       const acct = await deriveAccount(w);
       setAccount(acct);

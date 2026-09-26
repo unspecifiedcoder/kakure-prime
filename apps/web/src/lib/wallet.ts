@@ -1,12 +1,78 @@
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
-import { PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
+import { ed25519 } from "@noble/curves/ed25519";
 import { SolanaAccount } from "@kakure/sdk";
 import { ACCOUNT_SEED_MESSAGE } from "@kakure/sdk";
+import { listEncryptedIds, loadEncrypted, saveEncrypted } from "./keystore.js";
+
+export const KAKURE_WALLET_ID = "wallet:kakure:v1";
+
+interface KakureWalletRecord {
+  version: 1;
+  publicKey: string;
+  secretKey: number[];
+  createdAt: string;
+}
 
 export interface ConnectedWallet {
   publicKey: PublicKey;
   signMessage(message: Uint8Array): Promise<Uint8Array>;
   signTransaction<T extends { serialize?: unknown }>(tx: T): Promise<T>;
+}
+
+let activeWallet: ConnectedWallet | null = null;
+
+export function getActiveWallet(): ConnectedWallet | null {
+  return activeWallet;
+}
+
+export function clearActiveWallet(): void {
+  activeWallet = null;
+}
+
+function walletFromKeypair(keypair: Keypair): ConnectedWallet {
+  return {
+    publicKey: keypair.publicKey,
+    signMessage: async (message) => ed25519.sign(message, keypair.secretKey.slice(0, 32)),
+    signTransaction: async <T extends { serialize?: unknown }>(tx: T): Promise<T> => {
+      const signable = tx as T & {
+        partialSign?: (...signers: Keypair[]) => void;
+        sign?: (signers: Keypair[]) => void;
+      };
+      if (typeof signable.partialSign === "function") signable.partialSign(keypair);
+      else if (typeof signable.sign === "function") signable.sign([keypair]);
+      else throw new Error("Kakure Wallet received an unsupported Solana transaction type");
+      return tx;
+    },
+  };
+}
+
+export async function hasKakureWallet(): Promise<boolean> {
+  return (await listEncryptedIds()).includes(KAKURE_WALLET_ID);
+}
+
+export async function createKakureWallet(passphrase: string): Promise<ConnectedWallet> {
+  if (passphrase.length < 12) throw new Error("Use a passphrase of at least 12 characters.");
+  if (await hasKakureWallet()) throw new Error("Kakure Wallet already exists in this browser.");
+  const keypair = Keypair.generate();
+  const record: KakureWalletRecord = {
+    version: 1,
+    publicKey: keypair.publicKey.toBase58(),
+    secretKey: Array.from(keypair.secretKey),
+    createdAt: new Date().toISOString(),
+  };
+  await saveEncrypted(KAKURE_WALLET_ID, record, passphrase);
+  activeWallet = walletFromKeypair(keypair);
+  return activeWallet;
+}
+
+export async function unlockKakureWallet(passphrase: string): Promise<ConnectedWallet> {
+  const record = await loadEncrypted<KakureWalletRecord>(KAKURE_WALLET_ID, passphrase);
+  if (record.version !== 1 || record.secretKey.length !== 64) throw new Error("Unsupported Kakure Wallet record.");
+  const keypair = Keypair.fromSecretKey(Uint8Array.from(record.secretKey));
+  if (keypair.publicKey.toBase58() !== record.publicKey) throw new Error("Kakure Wallet integrity check failed.");
+  activeWallet = walletFromKeypair(keypair);
+  return activeWallet;
 }
 
 /**
@@ -30,6 +96,12 @@ export async function connectPhantom(): Promise<ConnectedWallet> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     signTransaction: (tx) => adapter.signTransaction(tx as any) as any,
   };
+}
+
+/** Uses an unlocked Kakure Wallet when present, otherwise falls back to Phantom. */
+export async function connectPreferredWallet(): Promise<ConnectedWallet> {
+  if (activeWallet) return activeWallet;
+  return connectPhantom();
 }
 
 /**

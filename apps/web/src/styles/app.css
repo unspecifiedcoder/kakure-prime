@@ -54,6 +54,36 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
 .footer { border-top: 1px solid var(--rule); padding: 1.25rem 1.5rem; font-size: 0.875rem; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; }
 .footer a { color: var(--ink-2); }
 
+/* Kakure Wallet */
+.wallet-page { display: grid; gap: 1.5rem; }
+.wallet-hero { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: end; padding: 3.5rem 0 2rem; border-bottom: 1px solid var(--rule); }
+.wallet-hero h1 { max-width: 14ch; font-size: clamp(2.6rem, 6vw, 5rem); letter-spacing: -.055em; line-height: .98; }
+.network-switcher { min-width: 13rem; display: grid; gap: .45rem; color: var(--ink-3); font: 700 .7rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.network-switcher select { width: 100%; }
+.wallet-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 1rem; }
+.wallet-card, .wallet-balance-card { padding: 1.5rem; border: 1px solid var(--rule); background: var(--surface); box-shadow: var(--shadow); }
+.wallet-card { max-width: none; }
+.wallet-card-kicker { display: block; margin-bottom: .9rem; color: var(--teal); font: 750 .68rem/1 var(--mono); letter-spacing: .1em; }
+.wallet-balance-card { display: grid; align-content: start; gap: .55rem; background: #0f1713; color: #e9f2ec; }
+.wallet-balance-card strong { font-size: clamp(3rem, 7vw, 5rem); letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.wallet-balance-card > span:not(.wallet-card-kicker) { color: #aab8af; }
+.wallet-balance-card a { margin-top: 1.5rem; color: #8ee2ac; }
+.wallet-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem; }
+.wallet-privacy-card { grid-column: 1 / -1; background: var(--teal-wash); }
+.wallet-privacy-flow { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem; margin-top: 1rem; font: 700 .78rem/1 var(--mono); }
+.wallet-privacy-flow span { padding: .55rem .75rem; border: 1px solid rgba(23,111,74,.25); background: var(--surface); }
+.wallet-privacy-flow b { color: var(--teal); }
+.wallet-assurance { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--rule); }
+.wallet-assurance div { min-height: 7rem; padding: 1rem; display: grid; align-content: start; gap: .45rem; border-right: 1px solid var(--rule); }
+.wallet-assurance div:last-child { border-right: 0; }
+.wallet-assurance span { color: var(--ink-3); font-size: .86rem; }
+@media (max-width: 48rem) {
+  .wallet-hero, .wallet-grid, .wallet-assurance { grid-template-columns: 1fr; }
+  .wallet-privacy-card { grid-column: auto; }
+  .wallet-assurance div { border-right: 0; border-bottom: 1px solid var(--rule); }
+  .wallet-assurance div:last-child { border-bottom: 0; }
+}
+
 /* Badges & chips */
 .badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.125rem 0.5rem; border-radius: 999px; font-size: 0.8125rem; font-weight: 600; border: 1px solid var(--rule); color: var(--ink-2); background: var(--surface); }
 .badge.private { color: var(--teal); background: var(--teal-wash); border-color: transparent; }

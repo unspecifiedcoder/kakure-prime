@@ -19,6 +19,7 @@
 | Experience | Link |
 |---|---|
 | Live product | [kakure-prime.vercel.app](https://kakure-prime.vercel.app/) |
+| Kakure Wallet | [Open the encrypted browser wallet](https://kakure-prime.vercel.app/#/wallet) |
 | 60-second judge walkthrough | [Launch guided demo](https://kakure-prime.vercel.app/#/demo) |
 | Pitch video | [Watch the pitch](https://kakure-prime.vercel.app/pitch-video.html) |
 | Technical walkthrough | [Watch the technical demo](https://kakure-prime.vercel.app/demo-video.html) |
@@ -52,6 +53,7 @@ Kakure Prime gives funds, DAOs, family offices, and global teams a confidential 
 | Meteora DBC | Traded on devnet | [Pool](https://explorer.solana.com/address/58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW?cluster=devnet) · [finalized buy](https://explorer.solana.com/tx/57ro5JMwkSZaMM15DjBrCXkUoxKtVvfRkJbYAVRHZzz6TKGdTivqKvDiLsGh22FroEBBbXrdQzjuRw6Cr368y1to?cluster=devnet) |
 | Hosted judge walkthrough | Live | Sponsor/deployment evidence is live; the five settlement clicks are intentionally simulated |
 | Zero-install browser proving | Live devnet bundle | Deposit/withdraw use the real worker-based Go/gnark WASM prover with persistent artifact caching, prepared-circuit reuse, and a SHA-256-pinned development artifact bundle |
+| Kakure Wallet | Working in browser | Encrypted local Solana signer, lock/unlock, encrypted backup, network-separated balance reads, and direct Kakure account derivation |
 
 The full cryptographic flow runs end to end on a local validator. The hosted walkthrough is designed for reliable judging without an 80-second proof wait or a local prover installation; it labels its simulated settlement clicks in the UI.
 
@@ -203,16 +205,15 @@ just e2e-scenario
 - Unaudited circuits, programs, and Sunspot toolchain
 - A demo verifier on the public devnet deployment
 - A local helper for treasury-side proving
-- A browser prover stub for zero-install deposits and withdrawals
+- A browser prover using development-only proving parameters
 - The anonymity set of the active pool
 
 ## What remains to build
 
 ### P0 — complete the undeniable hosted transaction
 
-- [ ] Replace `WasmProver` with the real browser WASM prover for zero-install deposit and withdrawal.
 - [ ] Deploy the seven production verifier programs to devnet and point the pool at them instead of the demo verifier.
-- [ ] Execute and record a complete Phantom-driven devnet path: connect → deposit → private settlement → withdrawal, with Explorer links in the UI.
+- [ ] Execute and record a complete Kakure Wallet devnet path: connect → deposit → private settlement → withdrawal, with Explorer links in the UI.
 - [ ] Add GitHub Actions for workspace tests, web build, Rust tests, reproducible program binaries, and secret scanning.
 
 ### P1 — sponsor and production hardening
@@ -227,7 +228,7 @@ just e2e-scenario
 
 - [ ] Multi-party trusted-setup ceremony and independent circuit/program audit.
 - [ ] Multithreaded browser proving and proof-artifact caching.
-- [ ] Hardware-wallet testing, recovery UX, and encrypted cross-device treasury backup.
+- [ ] Hardware-wallet testing, encrypted-backup import/recovery UX, auto-lock policy, and independent wallet security review.
 - [ ] Scheduled distributions, multi-asset batches, policy templates, and accountant exports.
 
 ## Originality disclosure

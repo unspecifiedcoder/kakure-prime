@@ -1,8 +1,23 @@
-import { describe, it, expect } from "vitest";
+import "fake-indexeddb/auto";
+import { describe, it, expect, beforeEach } from "vitest";
 import { ed25519 } from "@noble/curves/ed25519";
 import { PublicKey } from "@solana/web3.js";
 import { ACCOUNT_SEED_MESSAGE, SolanaAccount } from "@kakure/sdk";
-import { deriveAccount, type ConnectedWallet } from "./wallet.js";
+import {
+  clearActiveWallet,
+  createKakureWallet,
+  deriveAccount,
+  getActiveWallet,
+  hasKakureWallet,
+  unlockKakureWallet,
+  type ConnectedWallet,
+} from "./wallet.js";
+import { removeEncrypted } from "./keystore.js";
+
+beforeEach(async () => {
+  clearActiveWallet();
+  await removeEncrypted("wallet:kakure:v1");
+});
 
 function fakeWallet(seed: Uint8Array): ConnectedWallet {
   const pub = ed25519.getPublicKey(seed);
@@ -52,5 +67,23 @@ describe("lib/wallet deriveAccount (spec §1.1: wallet signature seeds SolanaAcc
     const a = await deriveAccount(fakeWallet(new Uint8Array(32).fill(1)));
     const b = await deriveAccount(fakeWallet(new Uint8Array(32).fill(2)));
     expect((await a.getViewKey()).toString()).not.toBe((await b.getViewKey()).toString());
+  });
+});
+
+describe("Kakure Wallet encrypted local custody", () => {
+  it("creates, locks, and restores the same Solana signer from the encrypted browser vault", async () => {
+    const created = await createKakureWallet("correct horse battery staple");
+    const address = created.publicKey.toBase58();
+    expect(await hasKakureWallet()).toBe(true);
+    expect(getActiveWallet()?.publicKey.toBase58()).toBe(address);
+
+    clearActiveWallet();
+    const restored = await unlockKakureWallet("correct horse battery staple");
+    expect(restored.publicKey.toBase58()).toBe(address);
+    expect(await restored.signMessage(new Uint8Array([1, 2, 3]))).toHaveLength(64);
+  });
+
+  it("refuses a short passphrase", async () => {
+    await expect(createKakureWallet("too-short")).rejects.toThrow(/at least 12/);
   });
 });

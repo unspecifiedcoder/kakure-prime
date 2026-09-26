@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppStore } from "../store/appStore.js";
-import { connectPhantom, deriveAccount } from "../lib/wallet.js";
+import { connectPreferredWallet, deriveAccount } from "../lib/wallet.js";
 import { createOrJoinTreasury, decodeInvite, encodeInvite } from "../lib/treasury.js";
 import { CopyLine } from "../ui/CopyButton.js";
 import { Steps } from "../ui/Steps.js";
@@ -41,7 +41,7 @@ export function Home(): JSX.Element {
   async function onConnect(): Promise<void> {
     setConnectStatus({ kind: "connecting" });
     try {
-      const wallet = await connectPhantom();
+      const wallet = await connectPreferredWallet();
       const account = await deriveAccount(wallet);
       connect(wallet.publicKey, account);
       setConnectStatus({ kind: "idle" });
@@ -120,16 +120,19 @@ export function Home(): JSX.Element {
           <a className="btn big" href="/demo-video.html">
             Technical walkthrough
           </a>
+          <Link className="btn big" to="/wallet">
+            Open Kakure Wallet
+          </Link>
           {connected ? (
             <p>
               Connected: <span className="chip">{shortAddress(walletPublicKey!.toBase58())}</span>
             </p>
           ) : (
             <button type="button" className="primary big" onClick={() => void onConnect()} disabled={connectStatus.kind === "connecting"}>
-              {connectStatus.kind === "connecting" ? "Waiting for Phantom…" : "Connect Phantom wallet"}
+              {connectStatus.kind === "connecting" ? "Connecting wallet…" : "Connect wallet"}
             </button>
           )}
-          {!connected && <span className="muted">Requires the Phantom extension in Chrome or Brave.</span>}
+          {!connected && <span className="muted">Use Kakure Wallet in any browser, or Phantom in Chrome and Brave.</span>}
           {connectStatus.kind === "error" && <p role="alert">{connectStatus.message}</p>}
         </section>
       </div>

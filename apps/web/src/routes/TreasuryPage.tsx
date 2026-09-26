@@ -13,7 +13,7 @@ import { depositToTreasury, payOneRecipient, ensureLookupTable, selectSpendableN
 import { InMemoryEphemeralCounterStore } from "@kakure/sdk";
 import { encodeClaimToken } from "../lib/claimToken.js";
 import { decodeReceiveAddress } from "../lib/receiveAddress.js";
-import { connectPhantom } from "../lib/wallet.js";
+import { connectPreferredWallet } from "../lib/wallet.js";
 import { CopyLine } from "../ui/CopyButton.js";
 import { Steps } from "../ui/Steps.js";
 import { formatAmount, parseAmount, shortAddress, PROVING_ETA } from "../ui/format.js";
@@ -123,7 +123,7 @@ export function TreasuryPage(): JSX.Element {
       const t = token ?? (await onResolveToken());
       if (!t) throw new Error("Pick a token first.");
       const programId = requireProgramId();
-      const wallet = await connectPhantom();
+      const wallet = await connectPreferredWallet();
       const connection = new (await import("@solana/web3.js")).Connection(settings.rpcUrl);
       const proverPort = proverFor(CircuitId.Deposit, { helper: { baseUrl: settings.helperUrl, token: settings.helperToken } });
       const alt = await ensureLookupTable(connection, wallet);
@@ -151,7 +151,7 @@ export function TreasuryPage(): JSX.Element {
     setPaying(true);
     const group = unlock.group;
     try {
-      const wallet = await connectPhantom();
+      const wallet = await connectPreferredWallet();
       const { Connection } = await import("@solana/web3.js");
       const connection = new Connection(settings.rpcUrl);
       const proverPort = proverFor(CircuitId.TransferMultisig, { helper: { baseUrl: settings.helperUrl, token: settings.helperToken } });

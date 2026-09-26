@@ -12,7 +12,7 @@ import { PublicKey } from "@solana/web3.js";
 
 async function connectAndFindPayment(token: string): Promise<void> {
   const account = await SolanaAccount.fromSeed("claim-progress-seed");
-  vi.spyOn(walletLib, "connectPhantom").mockResolvedValue({
+  vi.spyOn(walletLib, "connectPreferredWallet").mockResolvedValue({
     publicKey: PublicKey.default,
     signMessage: vi.fn(),
     signTransaction: vi.fn(),
@@ -63,7 +63,7 @@ describe("ClaimPage (spec §1.2: no secrets in the link, never asks for a spend 
   it("connecting derives the account from the wallet's signature and scans only the token's leaf range", async () => {
     const token = encodeClaimToken({ indexerUrl: "http://indexer.example", incomingAddressHint: "hint", fromLeaf: 5, toLeaf: 8 });
     const account = await SolanaAccount.fromSeed("claim-test-seed");
-    vi.spyOn(walletLib, "connectPhantom").mockResolvedValue({
+    vi.spyOn(walletLib, "connectPreferredWallet").mockResolvedValue({
       publicKey: PublicKey.default,
       signMessage: vi.fn(),
       signTransaction: vi.fn(),
@@ -186,7 +186,7 @@ describe("ClaimPage (spec §1.2: no secrets in the link, never asks for a spend 
   it("shows a friendly not-found message when the scan finds nothing in range", async () => {
     const token = encodeClaimToken({ indexerUrl: "http://indexer.example", incomingAddressHint: "hint", fromLeaf: 0, toLeaf: 1 });
     const account = await SolanaAccount.fromSeed("claim-test-seed-2");
-    vi.spyOn(walletLib, "connectPhantom").mockResolvedValue({
+    vi.spyOn(walletLib, "connectPreferredWallet").mockResolvedValue({
       publicKey: PublicKey.default,
       signMessage: vi.fn(),
       signTransaction: vi.fn(),

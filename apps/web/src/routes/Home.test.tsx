@@ -24,7 +24,7 @@ beforeEach(() => {
 describe("Home (spec §1.1: connect, create/join a private treasury)", () => {
   it("shows a connect button when no wallet is connected, and no treasuries yet", () => {
     renderHome();
-    expect(screen.getByRole("button", { name: /connect phantom wallet/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /connect wallet/i })).toBeInTheDocument();
     expect(screen.getByText(/no private portfolios yet/i)).toBeInTheDocument();
   });
 
@@ -36,7 +36,7 @@ describe("Home (spec §1.1: connect, create/join a private treasury)", () => {
 
   it("connecting derives the account and shows the wallet address instead of the connect button", async () => {
     const account = await SolanaAccount.fromSeed("home-test-seed");
-    vi.spyOn(walletLib, "connectPhantom").mockResolvedValue({
+    vi.spyOn(walletLib, "connectPreferredWallet").mockResolvedValue({
       publicKey: PublicKey.default,
       signMessage: vi.fn(),
       signTransaction: vi.fn(),
@@ -44,7 +44,7 @@ describe("Home (spec §1.1: connect, create/join a private treasury)", () => {
     vi.spyOn(walletLib, "deriveAccount").mockResolvedValue(account);
 
     renderHome();
-    screen.getByRole("button", { name: /connect phantom wallet/i }).click();
+    screen.getByRole("button", { name: /connect wallet/i }).click();
     await waitFor(() => expect(screen.getByText(/connected:/i)).toBeInTheDocument());
   });
 
