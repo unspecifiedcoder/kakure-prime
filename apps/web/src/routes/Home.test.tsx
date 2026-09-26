@@ -28,6 +28,12 @@ describe("Home (spec §1.1: connect, create/join a private treasury)", () => {
     expect(screen.getByText(/no private portfolios yet/i)).toBeInTheDocument();
   });
 
+  it("links both submission videos from the hero", () => {
+    renderHome();
+    expect(screen.getByRole("link", { name: /watch pitch video/i })).toHaveAttribute("href", "/pitch-video.html");
+    expect(screen.getByRole("link", { name: /technical walkthrough/i })).toHaveAttribute("href", "/demo-video.html");
+  });
+
   it("connecting derives the account and shows the wallet address instead of the connect button", async () => {
     const account = await SolanaAccount.fromSeed("home-test-seed");
     vi.spyOn(walletLib, "connectPhantom").mockResolvedValue({

@@ -110,10 +110,16 @@ export function Home(): JSX.Element {
           <span><b>03</b> Private settlement</span>
           <span><b>04</b> Committee audit</span>
         </div>
-        <section aria-label="Wallet" className="actions">
+        <section aria-label="Demo, videos, and wallet" className="actions">
           <Link className="btn primary big demo-cta" to="/demo">
             Launch 60-second judge demo
           </Link>
+          <a className="btn big" href="/pitch-video.html">
+            Watch pitch video
+          </a>
+          <a className="btn big" href="/demo-video.html">
+            Technical walkthrough
+          </a>
           {connected ? (
             <p>
               Connected: <span className="chip">{shortAddress(walletPublicKey!.toBase58())}</span>
