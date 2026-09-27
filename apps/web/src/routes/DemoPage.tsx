@@ -18,6 +18,11 @@ const METEORA_DBC_POOL = "58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW";
 const METEORA_EXPLORER_URL = `https://explorer.solana.com/address/${METEORA_DBC_POOL}?cluster=devnet`;
 const PRIVATE_E2E_URL = "https://github.com/unspecifiedcoder/kakure-prime/blob/main/docs/evidence/PRIVATE_E2E.md";
 const transactionUrl = (signature: string): string => `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+const DEVNET_EVIDENCE = {
+  deposit: "4QSDN3RSCUm4eSANet9Qd1BSTgkptdFh8EDRBKF7yRs5w1LnJhhyrDUM2WepxbwrLmazr4Pc543FU2hANz1ec8j4",
+  transfer: "2EyosmdTjZ3c7DsgQRBHhGexfEM6JGhGxk1XFJLeAyooPkvuX8yP2iqJjJucC3DeyZqXpeKmgPEvtt13Pqjknwsg",
+  withdraw: "GFuaxgsPVUtPQiKbzb12Enoe583t1jCbXuNrFDbgiZQZKtLRKTZS4Dga3cPHq4VSBuJHiUJiqt7EHo8mf2T9S7m",
+} as const;
 const shorten = (value: string): string => `${value.slice(0, 5)}…${value.slice(-5)}`;
 
 const STEPS = [
@@ -88,7 +93,7 @@ export function DemoPage(): JSX.Element {
     <main className="judge-demo">
       <div className="demo-notice" role="note">
         <span>GUIDED JUDGE MODE</span>
-        <strong>Live sponsor data + verified devnet evidence · settlement clicks are simulated</strong>
+        <strong>Live sponsor data + finalized public Devnet evidence · guided settlement clicks are simulated</strong>
       </div>
 
       <header className="demo-hero">
@@ -108,10 +113,15 @@ export function DemoPage(): JSX.Element {
 
       <section className="integration-evidence" aria-label="Live integration and protocol evidence">
         <article data-state="pass">
-          <div><span>00 · PRIVATE E2E</span><b>9 / 9 PASS</b></div>
-          <h2>Real proof-backed settlement</h2>
+          <div><span>00 · PUBLIC DEVNET E2E</span><b>9 / 9 PASS</b></div>
+          <h2>Finalized private settlement</h2>
           <p>Real Groth16 deposit → 3-of-5 private transfer → recipient scan → exact withdrawal, plus stale-root, replay, and 2-of-5 rejection.</p>
-          <a href={PRIVATE_E2E_URL} target="_blank" rel="noreferrer">Reproduce the validator run ↗</a>
+          <div className="evidence-links">
+            <a href={transactionUrl(DEVNET_EVIDENCE.deposit)} target="_blank" rel="noreferrer">Deposit ↗</a>
+            <a href={transactionUrl(DEVNET_EVIDENCE.transfer)} target="_blank" rel="noreferrer">Private transfer ↗</a>
+            <a href={transactionUrl(DEVNET_EVIDENCE.withdraw)} target="_blank" rel="noreferrer">Withdrawal ↗</a>
+            <a href={PRIVATE_E2E_URL} target="_blank" rel="noreferrer">Full evidence ↗</a>
+          </div>
         </article>
         <article data-state={preStocksGate ? preStocksGate.passed ? "pass" : "block" : "loading"}>
           <div><span>01 · PRESTOCKS</span><b>{preStocksGate ? preStocksGate.passed ? "POLICY PASS" : "POLICY BLOCK" : "VERIFYING"}</b></div>
@@ -134,7 +144,7 @@ export function DemoPage(): JSX.Element {
         <article data-state={protocol?.verified ? "pass" : "loading"}>
           <div><span>04 · KAKURE PROTOCOL</span><b>{protocol?.verified ? "DEPLOYED" : "VERIFYING"}</b></div>
           <h2>Executable Solana programs</h2>
-          <p>{protocol ? `Pool + test verifier verified executable on devnet. Real local E2E uses ${protocol.productionVerifierCount} Groth16 verifier programs.` : "Checking program ownership and executable state…"}</p>
+          <p>{protocol ? `Pool + ${protocol.deployedVerifierCount} matching Groth16 verifiers verified executable on Devnet; deposit, threshold transfer, and withdrawal are finalized.` : "Checking program ownership and executable state…"}</p>
           {protocol && <a href={`https://explorer.solana.com/address/${protocol.poolProgram}?cluster=devnet`} target="_blank" rel="noreferrer">Pool program {shorten(protocol.poolProgram)} ↗</a>}
         </article>
       </section>
@@ -228,8 +238,9 @@ export function DemoPage(): JSX.Element {
 
       <p className="demo-footnote">
         Sponsor and deployment evidence is live. Only the five hosted settlement clicks are simulated for judge accessibility.
-        The linked 9/9 validator run executes the same lifecycle with seven real Groth16 verifiers; the current public Devnet
-        verifier remains test-only. <Link to="/security">Read the security model</Link>.
+        The three linked transactions are the real public Devnet lifecycle. Deposit and withdrawal expose their boundary amounts;
+        the internal transfer exposes commitments, a nullifier, ciphertext, and proof—not its plaintext value, recipient, or signer graph.
+        The seven-circuit suite also passes locally; this Devnet deployment enables the three circuits required by this path. <Link to="/security">Read the security model</Link>.
       </p>
     </main>
   );

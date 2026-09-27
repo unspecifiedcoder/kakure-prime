@@ -3,11 +3,16 @@ const UPGRADEABLE_LOADER = "BPFLoaderUpgradeab1e11111111111111111111111";
 
 const EVIDENCE = {
   network: "devnet",
-  poolProgram: "HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF",
-  demoVerifier: "37K2Nhpuh2r3xv6gZ9yfA8gPpEpvDXfLkgkK3YmdWVHT",
-  verifierMode: "test-only",
-  productionVerifierCount: 7,
-  localE2eCommand: "pnpm vitest run e2e/scenario.test.ts",
+  poolProgram: "CTBujgpdNFHAYg9WGDWjgGa68AxYuT1TKQBkRYnv6cBf",
+  verifierPrograms: [
+    "21sN3juRFvjxBokrkB2tNisFpiRnpXTq42XrzbJ3XtxM",
+    "CNoKnfajTr8XQXs4D84cy89C993KSn4bs5tXZ9Xmofwb",
+    "25pR3qcZynCSUxx7atAwahaCih6GeNzEt923YksuPMg4",
+  ],
+  verifierMode: "groth16-private-path",
+  deployedVerifierCount: 3,
+  totalCircuitCount: 7,
+  evidenceStatus: "9/9 passed",
 };
 
 async function rpc(method, params) {
@@ -25,7 +30,7 @@ async function rpc(method, params) {
 export default async function handler(_request, response) {
   try {
     const accounts = await rpc("getMultipleAccounts", [
-      [EVIDENCE.poolProgram, EVIDENCE.demoVerifier],
+      [EVIDENCE.poolProgram, ...EVIDENCE.verifierPrograms],
       { encoding: "base64", commitment: "confirmed" },
     ]);
     const programs = accounts.value.map((account) => ({

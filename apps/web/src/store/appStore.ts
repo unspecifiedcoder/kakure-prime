@@ -21,7 +21,7 @@ export interface Settings {
 }
 
 const SETTINGS_KEY = "kakure.web.settings.v1";
-const DEVNET_PROGRAM_ID = "HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF";
+const DEVNET_PROGRAM_ID = "CTBujgpdNFHAYg9WGDWjgGa68AxYuT1TKQBkRYnv6cBf";
 
 function defaultSettings(): Settings {
   return {

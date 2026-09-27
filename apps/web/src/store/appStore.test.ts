@@ -19,7 +19,7 @@ describe("appStore", () => {
     expect(state.settings.rpcUrl).toBe("https://api.devnet.solana.com");
     expect(state.settings.indexerUrl).toBe("https://kakure-prime-indexer.fly.dev");
     expect(state.settings.coordinatorUrl).toBe("https://kakure-prime-coordinator.fly.dev");
-    expect(state.settings.programId).toBe("HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF");
+    expect(state.settings.programId).toBe("CTBujgpdNFHAYg9WGDWjgGa68AxYuT1TKQBkRYnv6cBf");
   });
 
   it("connect()/disconnect() hold wallet+account only in memory", async () => {

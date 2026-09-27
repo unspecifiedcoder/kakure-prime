@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://kakure-prime.vercel.app/"><img alt="Live demo" src="https://img.shields.io/badge/live_demo-kakure--prime.vercel.app-14F195?style=for-the-badge&logo=vercel&logoColor=white"></a>
-  <a href="https://explorer.solana.com/address/HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF?cluster=devnet"><img alt="Solana devnet" src="https://img.shields.io/badge/Solana-devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white"></a>
+  <a href="https://explorer.solana.com/address/CTBujgpdNFHAYg9WGDWjgGa68AxYuT1TKQBkRYnv6cBf?cluster=devnet"><img alt="Solana devnet" src="https://img.shields.io/badge/Solana-devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white"></a>
   <a href="./LICENSE"><img alt="Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue?style=for-the-badge"></a>
 </p>
 
@@ -45,7 +45,7 @@ Kakure Prime gives funds, DAOs, family offices, and global teams a confidential 
 | Surface | Status | Evidence |
 |---|---|---|
 | Noir circuits + Groth16 proving | 9/9 real E2E passing | [Deposit → 3-of-5 transfer → recipient scan → withdrawal, with negative tests](./docs/evidence/PRIVATE_E2E.md) |
-| Solana shielded pool | Deployed on devnet | [Program `HPzs…sccF`](https://explorer.solana.com/address/HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF?cluster=devnet) |
+| Solana shielded pool | Real private path on Devnet | [Pool](https://explorer.solana.com/address/CTBujgpdNFHAYg9WGDWjgGa68AxYuT1TKQBkRYnv6cBf?cluster=devnet) · [deposit](https://explorer.solana.com/tx/4QSDN3RSCUm4eSANet9Qd1BSTgkptdFh8EDRBKF7yRs5w1LnJhhyrDUM2WepxbwrLmazr4Pc543FU2hANz1ec8j4?cluster=devnet) · [private transfer](https://explorer.solana.com/tx/2EyosmdTjZ3c7DsgQRBHhGexfEM6JGhGxk1XFJLeAyooPkvuX8yP2iqJjJucC3DeyZqXpeKmgPEvtt13Pqjknwsg?cluster=devnet) · [withdrawal](https://explorer.solana.com/tx/GFuaxgsPVUtPQiKbzb12Enoe583t1jCbXuNrFDbgiZQZKtLRKTZS4Dga3cPHq4VSBuJHiUJiqt7EHo8mf2T9S7m?cluster=devnet) |
 | FROST custody and encrypted coordination | Working | Dealerless DKG, threshold signing, encrypted relay |
 | Token-2022 routing | Working in code/localnet | Asset-program validation and deposit/withdraw routing |
 | PreStocks policy rail | Live in judge demo | Official API allowlist and ±15% token-to-mark mandate |
@@ -56,7 +56,7 @@ Kakure Prime gives funds, DAOs, family offices, and global teams a confidential 
 | Kakure Wallet extension | Working | Manifest V3 provider injection, encrypted local signer, 15-minute auto-lock, Devnet/Mainnet separation, explicit transaction review, real SOL broadcast, and Explorer handoff |
 | Wallet-signed Devnet transfer | Finalized and recorded | The pitch shows the extension creating, reviewing, signing, broadcasting, and opening the transaction in Solana Explorer |
 
-The full cryptographic flow runs end to end on a local validator in about 130 seconds, including proof generation, real verifier CPI, recipient scanning, vault withdrawal, and three failure paths. The hosted walkthrough is designed for reliable judging without a local prover installation; it labels its simulated settlement clicks in the UI and links directly to the reproducible evidence.
+The minimum cryptographic flow now runs end to end on public Devnet: real verifier CPI, dealerless FROST DKG, 3-of-5 settlement, recipient scanning, exact vault withdrawal, and three failure paths. The full seven-circuit suite also runs locally in about 130 seconds. The hosted walkthrough labels its guided clicks and links directly to finalized Explorer evidence.
 
 ## Sponsor integrations
 
@@ -120,14 +120,17 @@ The coordinator sees encrypted envelopes, session identifiers, and timing. The i
 
 | Artifact | Address / transaction |
 |---|---|
-| Kakure pool | [`HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF`](https://explorer.solana.com/address/HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF?cluster=devnet) |
-| Demo verifier | [`37K2Nhpuh2r3xv6gZ9yfA8gPpEpvDXfLkgkK3YmdWVHT`](https://explorer.solana.com/address/37K2Nhpuh2r3xv6gZ9yfA8gPpEpvDXfLkgkK3YmdWVHT?cluster=devnet) |
+| Kakure pool | [`CTBujgpdNFHAYg9WGDWjgGa68AxYuT1TKQBkRYnv6cBf`](https://explorer.solana.com/address/CTBujgpdNFHAYg9WGDWjgGa68AxYuT1TKQBkRYnv6cBf?cluster=devnet) |
+| Deposit Groth16 verifier | [`21sN3juRFvjxBokrkB2tNisFpiRnpXTq42XrzbJ3XtxM`](https://explorer.solana.com/address/21sN3juRFvjxBokrkB2tNisFpiRnpXTq42XrzbJ3XtxM?cluster=devnet) |
+| 3-of-5 transfer Groth16 verifier | [`CNoKnfajTr8XQXs4D84cy89C993KSn4bs5tXZ9Xmofwb`](https://explorer.solana.com/address/CNoKnfajTr8XQXs4D84cy89C993KSn4bs5tXZ9Xmofwb?cluster=devnet) |
+| Withdrawal Groth16 verifier | [`25pR3qcZynCSUxx7atAwahaCih6GeNzEt923YksuPMg4`](https://explorer.solana.com/address/25pR3qcZynCSUxx7atAwahaCih6GeNzEt923YksuPMg4?cluster=devnet) |
+| Finalized private path | [Deposit](https://explorer.solana.com/tx/4QSDN3RSCUm4eSANet9Qd1BSTgkptdFh8EDRBKF7yRs5w1LnJhhyrDUM2WepxbwrLmazr4Pc543FU2hANz1ec8j4?cluster=devnet) → [3-of-5 transfer](https://explorer.solana.com/tx/2EyosmdTjZ3c7DsgQRBHhGexfEM6JGhGxk1XFJLeAyooPkvuX8yP2iqJjJucC3DeyZqXpeKmgPEvtt13Pqjknwsg?cluster=devnet) → [withdrawal](https://explorer.solana.com/tx/GFuaxgsPVUtPQiKbzb12Enoe583t1jCbXuNrFDbgiZQZKtLRKTZS4Dga3cPHq4VSBuJHiUJiqt7EHo8mf2T9S7m?cluster=devnet) |
 | Meteora DBC config | [`8wqCNyoxQMUGRJwXngG2wxVLzqduTazi2nDjcuoCqbFT`](https://explorer.solana.com/address/8wqCNyoxQMUGRJwXngG2wxVLzqduTazi2nDjcuoCqbFT?cluster=devnet) |
 | Meteora pool | [`58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW`](https://explorer.solana.com/address/58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW?cluster=devnet) |
 | Shielded-equity receipt | [`Eqi8f5wf2fDWKriZUGC8qRS9ueYwhf37LDpZupaSbfJ8`](https://explorer.solana.com/address/Eqi8f5wf2fDWKriZUGC8qRS9ueYwhf37LDpZupaSbfJ8?cluster=devnet) |
 | Finalized DBC buy | [`57ro…1to`](https://explorer.solana.com/tx/57ro5JMwkSZaMM15DjBrCXkUoxKtVvfRkJbYAVRHZzz6TKGdTivqKvDiLsGh22FroEBBbXrdQzjuRw6Cr368y1to?cluster=devnet) |
 
-The deployed verifier is deliberately labelled as a **demo verifier**. Real Groth16 verification is exercised in the local-validator path; the demo verifier must never custody real assets.
+The public pool routes circuit IDs 0, 3, and 2 to their matching deposit, 3-of-5 transfer, and withdrawal Groth16 verifier programs. The remaining four circuits in the full suite are local-only. The setup is unaudited and uses development parameters; never custody material assets here.
 
 ## Repository map
 
@@ -204,7 +207,7 @@ just e2e-scenario
 
 - Development Groth16 setup parameters
 - Unaudited circuits, programs, and Sunspot toolchain
-- A demo verifier on the public devnet deployment
+- Four supplementary verifier circuits remain local-only
 - A local helper for treasury-side proving
 - A browser prover using development-only proving parameters
 - The anonymity set of the active pool
@@ -213,10 +216,11 @@ just e2e-scenario
 
 ### P0 — complete the undeniable hosted transaction
 
-- [ ] Deploy the seven production verifier programs to devnet and point the pool at them instead of the demo verifier.
+- [x] Deploy the three matching Groth16 verifier programs required by the minimum private path and route the Devnet pool to them.
+- [ ] Deploy the four supplementary verifier programs that complete the seven-circuit suite.
 - [x] Execute and record a standard Kakure Wallet Devnet transfer with review, local signing, and finalized Explorer evidence.
 - [x] Execute and document the complete real private pool path locally: deposit → 3-of-5 proof-backed settlement → recipient scan → withdrawal, including replay/stale-root/insufficient-quorum rejection.
-- [ ] Execute and record the complete private pool path: deposit → proof-backed private settlement → withdrawal, with Explorer links in the UI.
+- [x] Execute and record the complete private pool path on public Devnet: deposit → proof-backed 3-of-5 private settlement → withdrawal, with finalized Explorer links in the UI.
 - [ ] Add GitHub Actions for workspace tests, web build, Rust tests, reproducible program binaries, and secret scanning.
 
 ### P1 — sponsor and production hardening

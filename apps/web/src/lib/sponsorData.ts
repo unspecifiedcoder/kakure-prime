@@ -40,10 +40,11 @@ export interface MeteoraEvidence {
 export interface ProtocolEvidence {
   readonly network: "devnet";
   readonly poolProgram: string;
-  readonly demoVerifier: string;
-  readonly verifierMode: "test-only";
-  readonly productionVerifierCount: number;
-  readonly localE2eCommand: string;
+  readonly verifierPrograms: readonly string[];
+  readonly verifierMode: "groth16-private-path";
+  readonly deployedVerifierCount: number;
+  readonly totalCircuitCount: number;
+  readonly evidenceStatus: "9/9 passed";
   readonly verified: boolean;
   readonly programs: readonly { readonly executable: boolean; readonly owner: string | null }[];
 }
@@ -115,7 +116,7 @@ export async function fetchProtocolEvidence(signal?: AbortSignal): Promise<Proto
   const response = await fetch(PROTOCOL_EVIDENCE_API, signal ? { signal } : undefined);
   if (!response.ok) throw new Error(`Protocol evidence API returned ${response.status}`);
   const row = (await response.json()) as Partial<ProtocolEvidence>;
-  if (typeof row.poolProgram !== "string" || row.verifierMode !== "test-only" || typeof row.verified !== "boolean") {
+  if (typeof row.poolProgram !== "string" || row.verifierMode !== "groth16-private-path" || typeof row.verified !== "boolean") {
     throw new Error("Protocol evidence was malformed");
   }
   return row as ProtocolEvidence;

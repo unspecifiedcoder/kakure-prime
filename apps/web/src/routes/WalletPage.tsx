@@ -15,7 +15,7 @@ import { CopyLine } from "../ui/CopyButton.js";
 
 const DEVNET_RPC = "https://api.devnet.solana.com";
 const MAINNET_RPC = "https://api.mainnet-beta.solana.com";
-const DEVNET_PROGRAM_ID = "HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF";
+const DEVNET_PROGRAM_ID = "CTBujgpdNFHAYg9WGDWjgGa68AxYuT1TKQBkRYnv6cBf";
 
 type WalletState = "loading" | "missing" | "locked" | "unlocked";
 type Cluster = "devnet" | "mainnet-beta";

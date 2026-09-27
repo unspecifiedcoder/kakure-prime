@@ -8,9 +8,13 @@ describe("DemoPage", () => {
     render(<MemoryRouter><DemoPage /></MemoryRouter>);
     expect(screen.getByText(/guided judge mode/i)).toBeInTheDocument();
     expect(screen.getByText(/9 \/ 9 pass/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /reproduce the validator run/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /full evidence/i })).toHaveAttribute(
       "href",
       "https://github.com/unspecifiedcoder/kakure-prime/blob/main/docs/evidence/PRIVATE_E2E.md",
+    );
+    expect(screen.getByRole("link", { name: /private transfer/i })).toHaveAttribute(
+      "href",
+      expect.stringContaining("2EyosmdTjZ3c7DsgQRBHhGexfEM6JGhGxk1XFJLeAyooPkvuX8yP2iqJjJucC3DeyZqXpeKmgPEvtt13Pqjknwsg"),
     );
     fireEvent.click(screen.getByRole("button", { name: /shield 42.50 AAPLx/i }));
     fireEvent.click(screen.getByRole("button", { name: /propose private distribution/i }));

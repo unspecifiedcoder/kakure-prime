@@ -292,6 +292,7 @@ summary { cursor: pointer; color: var(--ink-2); font-weight: 600; }
 .integration-evidence article h2 { font-size: 1rem; }
 .integration-evidence article p { min-height: 3.1rem; margin-bottom: .7rem; font-size: .8rem; }
 .integration-evidence article a { display: block; overflow: hidden; color: var(--teal); font: 650 .72rem/1.4 var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.integration-evidence article > .evidence-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem .6rem; margin: 0; }
 @media (max-width: 52rem) {
   .demo-hero, .demo-workspace, .integration-evidence { grid-template-columns: 1fr; }
   .demo-progress { display: none; }
