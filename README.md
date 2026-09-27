@@ -21,12 +21,13 @@
 | Live product | [kakure-prime.vercel.app](https://kakure-prime.vercel.app/) |
 | Kakure Wallet | [Download the browser extension](https://kakure-prime.vercel.app/#/wallet) |
 | 60-second judge walkthrough | [Launch guided demo](https://kakure-prime.vercel.app/#/demo) |
+| Finalized Devnet lifecycle | [Inspect deposit → private 3-of-5 settlement → withdrawal](https://kakure-prime.vercel.app/#/evidence) |
 | Pitch video | [Watch the pitch](https://kakure-prime.vercel.app/pitch-video.html) |
 | Technical walkthrough | [Watch the technical demo](https://kakure-prime.vercel.app/demo-video.html) |
 | Stocklana submission brief | [SUBMISSION.md](./SUBMISSION.md) |
 | Build/originality disclosure | [STOCKLANA.md](./STOCKLANA.md) |
 
-The fastest judging path is: open the guided demo, inspect the **9/9 real private E2E** evidence, then use the hosted walkthrough for the product narrative. The pitch also shows a real Kakure Wallet-signed Devnet transfer and finalized Explorer evidence.
+The fastest judging path is: inspect the **9/9 real private E2E** evidence, watch the proof-first pitch, then open the guided demo for the sponsor integrations and product narrative. Every finalized transaction and verifier program shown in the pitch links directly to Solana Explorer.
 
 ## The problem
 
@@ -54,7 +55,7 @@ Kakure Prime gives funds, DAOs, family offices, and global teams a confidential 
 | Hosted judge walkthrough | Live | Sponsor/deployment evidence is live; the five settlement clicks are intentionally simulated |
 | Zero-install browser proving | Live devnet bundle | Deposit/withdraw use the real worker-based Go/gnark WASM prover with persistent artifact caching, prepared-circuit reuse, and a SHA-256-pinned development artifact bundle |
 | Kakure Wallet extension | Working | Manifest V3 provider injection, encrypted local signer, 15-minute auto-lock, Devnet/Mainnet separation, explicit transaction review, real SOL broadcast, and Explorer handoff |
-| Wallet-signed Devnet transfer | Finalized and recorded | The pitch shows the extension creating, reviewing, signing, broadcasting, and opening the transaction in Solana Explorer |
+| Public Devnet lifecycle | Finalized and independently inspectable | Deposit, private 3-of-5 settlement, and withdrawal each link to their finalized Solana Explorer transaction; the evidence page also links the three matching Groth16 verifier programs |
 
 The minimum cryptographic flow now runs end to end on public Devnet: real verifier CPI, dealerless FROST DKG, 3-of-5 settlement, recipient scanning, exact vault withdrawal, and three failure paths. The full seven-circuit suite also runs locally in about 130 seconds. The hosted walkthrough labels its guided clicks and links directly to finalized Explorer evidence.
 

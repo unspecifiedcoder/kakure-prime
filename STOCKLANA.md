@@ -34,7 +34,8 @@ On-chain observers see commitments, nullifiers, and valid Groth16 proofs. Author
 - Dealerless FROST DKG and threshold signing.
 - Threshold compliance encryption with rotatable committee keys.
 - SDK, CLI, indexer, encrypted coordinator, local prover, WASM prover, and React application.
-- End-to-end local-validator flow: create portfolio → deposit → approve → private transfer → withdraw.
+- Finalized public Devnet flow: deposit → 3-of-5 private transfer → recipient scan → exact withdrawal.
+- The same run rejects stale roots, nullifier replay, and an insufficient 2-of-5 signature.
 - Token-2022 deposit and withdrawal routing added for Stocklana.
 - Live issuer quote data and verified Solana xStock mint presets in the application.
 - Live PreStocks catalog, mint addresses, mark prices, and token prices from the official API. The API is the allowlist, and the guided settlement enforces valid contract formatting plus a ±15% token-to-mark mandate.
@@ -49,8 +50,13 @@ On-chain observers see commitments, nullifiers, and valid Groth16 proofs. Author
 
 ## Devnet deployment
 
-- Kakure pool: `HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF`
-- Demo verifier: `37K2Nhpuh2r3xv6gZ9yfA8gPpEpvDXfLkgkK3YmdWVHT`
+- Kakure pool: `CTBujgpdNFHAYg9WGDWjgGa68AxYuT1TKQBkRYnv6cBf`
+- Deposit Groth16 verifier: `21sN3juRFvjxBokrkB2tNisFpiRnpXTq42XrzbJ3XtxM`
+- 3-of-5 transfer Groth16 verifier: `CNoKnfajTr8XQXs4D84cy89C993KSn4bs5tXZ9Xmofwb`
+- Withdrawal Groth16 verifier: `25pR3qcZynCSUxx7atAwahaCih6GeNzEt923YksuPMg4`
+- Finalized deposit: `4QSDN3RSCUm4eSANet9Qd1BSTgkptdFh8EDRBKF7yRs5w1LnJhhyrDUM2WepxbwrLmazr4Pc543FU2hANz1ec8j4`
+- Finalized private transfer: `2EyosmdTjZ3c7DsgQRBHhGexfEM6JGhGxk1XFJLeAyooPkvuX8yP2iqJjJucC3DeyZqXpeKmgPEvtt13Pqjknwsg`
+- Finalized withdrawal: `GFuaxgsPVUtPQiKbzb12Enoe583t1jCbXuNrFDbgiZQZKtLRKTZS4Dga3cPHq4VSBuJHiUJiqt7EHo8mf2T9S7m`
 - Meteora DBC config: `8wqCNyoxQMUGRJwXngG2wxVLzqduTazi2nDjcuoCqbFT`
 - Meteora DBC pool: `58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW`
 - Shielded-equity receipt mint: `Eqi8f5wf2fDWKriZUGC8qRS9ueYwhf37LDpZupaSbfJ8`
@@ -60,8 +66,7 @@ On-chain observers see commitments, nullifiers, and valid Groth16 proofs. Author
 - Post-trade quote reserve: `0.0198 SOL`; quote-side curve progress: `0.8241%`
 - Network: Solana devnet
 
-The verifier above is the repository's explicitly labelled test verifier, used only to exercise the
-devnet demonstration path. It is not the production Groth16 verifier and must never custody real assets.
+The three verifier programs above match the deposit, `transfer_multisig`, and withdrawal circuits used by the public flow. The remaining four circuits in the full seven-circuit suite are local-only. All use development setup parameters and must never custody material assets.
 
 ## Demo script (90 seconds)
 

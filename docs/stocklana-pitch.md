@@ -1,34 +1,21 @@
-# Kakure Prime — 90-second pitch
+# Kakure Prime — final proof-first pitch
+
+The current narration source is [`apps/web/scripts/pitch-narration.txt`](../apps/web/scripts/pitch-narration.txt), and the deterministic recorder is [`apps/web/scripts/record-final-pitch.mjs`](../apps/web/scripts/record-final-pitch.mjs).
 
 ## Voice-over
 
-**0–12 seconds — Problem**  
-Tokenized equities trade globally on Solana, but every wallet publishes the fund's book: positions, rebalances, recipients, and signer activity. Institutions protect that information everywhere else.
+The checked-in narration is the source of truth. It deliberately distinguishes the public deposit and withdrawal boundaries from the private settlement interior, identifies the three finalized Devnet transactions and their matching verifier programs, and states the present sponsor-integration limits without implying mainnet readiness.
 
-**12–28 seconds — Product**  
-Kakure Prime is confidential treasury and settlement for tokenized equities. A fund shields a position into a zero-knowledge note controlled by a three-of-five FROST quorum. No custodian and no shared private key.
+Pronunciation spellings in the narration source are converted back to `Kakure`, `Pyth`, `PreStocks`, `Meteora`, `Groth16`, and `FROST` in the generated subtitles. Run `scripts/render-final-pitch.sh` from WSL after recording the silent browser sequence to reproduce both video formats.
 
-**28–48 seconds — PreStocks and Pyth**  
-This is not a static mock. The private-market lane loads only official PreStocks assets, verifies every Token-2022 mint on-chain, and enforces a live token-to-mark mandate. For AAPLx, Pyth price, freshness, and confidence form a hard settlement gate—stale or uncertain data blocks execution.
+## Recording sequence
 
-**48–65 seconds — Privacy**  
-Authorized signers see the asset and amount. The public chain sees a commitment, a spent nullifier, and a valid Groth16 proof—never the ticker, recipient, amount, or signer graph. A separate auditor quorum can selectively disclose when legitimately required.
+1. State the institutional privacy problem on the product home.
+2. Hold on the above-the-fold deposit → private transfer → withdrawal proof rail.
+3. Open `/#/evidence` and show the three finalized transactions, three matching verifier programs, and negative-path rejections.
+4. Open `/#/demo` and show live PreStocks, Pyth, Meteora, and protocol evidence.
+5. Advance through the five-step guided lifecycle.
+6. Hold on the public-versus-authorized-quorum comparison.
+7. Close on the real Devnet proof rail and direct inspection call to action.
 
-**65–78 seconds — Meteora**  
-Successful settlement connects to a Meteora DBC equity-receipt market. The real devnet curve starts at a one-percent price-discovery fee, decays to twenty-five basis points, graduates to DAMM v2, and already has a finalized on-chain trade.
-
-**78–90 seconds — Close**  
-Kakure Prime gives tokenized equities the missing institutional primitive: private operations, threshold governance, verifiable settlement, and compliant auditability—built natively for Solana.
-
-## Recording shot list
-
-1. Project title and one-line problem.
-2. Open `/#/demo`; pause on the four live integration and protocol evidence cards.
-3. Select Anthropic and point to official mint verification plus NAV policy pass.
-4. Switch to AAPLx and show the Pyth freshness/confidence decision.
-5. Return to PreStocks and advance through all five settlement stages.
-6. Pause on the public-versus-authorized-quorum comparison.
-7. Open the finalized Meteora trade link and show devnet confirmation.
-8. End on the architecture rail and GitHub URL.
-
-Do not call the guided settlement itself an on-chain transaction. Say that the sponsor data and devnet evidence are live, while the clicks mirror the repository's real local-validator E2E flow.
+The guided clicks remain explicitly labelled as simulated. The pitch instead identifies the three separately linked public Devnet transactions as the real on-chain lifecycle.

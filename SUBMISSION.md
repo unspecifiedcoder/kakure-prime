@@ -8,7 +8,7 @@ Public wallets expose a fund's positions, rebalances, recipients, and signer gra
 
 Open the [guided judge demo](https://kakure-prime.vercel.app/#/demo). Choose an official PreStocks asset, pass its live NAV policy, shield the position, collect a 3-of-5 FROST quorum, generate the settlement proof, and see exactly what the public chain can—and cannot—learn.
 
-The guided clicks are simulated for accessibility. The repository separately contains the real circuits, Solana programs, SDK, prover, FROST ceremonies, encrypted coordinator, indexer, and local-validator end-to-end flow.
+The guided clicks are simulated for accessibility. Directly above them, judges can open the finalized public Devnet deposit, 3-of-5 private transfer, and withdrawal. The same run passes stale-root, replay, and insufficient-quorum rejection tests.
 
 ## Sponsor integrations that do real work
 
@@ -46,8 +46,10 @@ Tokenized equities already live as composable Token-2022 assets. Solana's low fe
 - Threshold compliance encryption with rotatable committee keys
 - Token-2022 deposit and withdrawal routing
 - SDK, CLI, indexer, coordinator, local/WASM prover, React application
-- Local-validator E2E: create → deposit → approve → transfer → claim → withdraw
-- Deployed devnet programs and verifiable Meteora lifecycle evidence
+- Public Devnet E2E: deposit → 3-of-5 private transfer → recipient scan → exact withdrawal
+- Three matching Groth16 verifier programs plus the shielded pool deployed and executable on Devnet
+- Negative-path evidence: stale root, spent-nullifier replay, and 2-of-5 quorum rejection
+- Verifiable Meteora configuration, pool, receipt mint, and finalized trade
 
 ## Originality disclosure
 
@@ -55,7 +57,13 @@ Kakure Prime transparently builds on Kakure, an Apache-2.0 project by the same a
 
 ## Safety
 
-Pre-release, unaudited, and devnet/localnet only. The current trusted setup and demo verifier are not production-safe. Kakure Prime does not issue securities or provide investment advice.
+Pre-release, unaudited, and devnet/localnet only. The current Groth16 parameters use an `INSECURE-DEV` setup; the public deployment must not custody material assets. Kakure Prime does not issue securities or provide investment advice.
+
+## Finalized private-flow evidence
+
+- [Deposit](https://explorer.solana.com/tx/4QSDN3RSCUm4eSANet9Qd1BSTgkptdFh8EDRBKF7yRs5w1LnJhhyrDUM2WepxbwrLmazr4Pc543FU2hANz1ec8j4?cluster=devnet)
+- [3-of-5 private transfer](https://explorer.solana.com/tx/2EyosmdTjZ3c7DsgQRBHhGexfEM6JGhGxk1XFJLeAyooPkvuX8yP2iqJjJucC3DeyZqXpeKmgPEvtt13Pqjknwsg?cluster=devnet)
+- [Withdrawal](https://explorer.solana.com/tx/GFuaxgsPVUtPQiKbzb12Enoe583t1jCbXuNrFDbgiZQZKtLRKTZS4Dga3cPHq4VSBuJHiUJiqt7EHo8mf2T9S7m?cluster=devnet)
 
 - **Demo:** https://kakure-prime.vercel.app/#/demo
 - **Pitch video:** https://kakure-prime.vercel.app/pitch-video.html
