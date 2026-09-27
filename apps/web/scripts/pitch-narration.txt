@@ -1,19 +1,13 @@
-Every Solana treasury reveals the strategy: positions, rebalances, recipients, and who approved them. Kah-koo-ray Prime changes that.
+Public blockchains turn every equity treasury into public alpha: positions, recipients, rebalances, and approval patterns. Kah-koo-reh Prime changes that.
 
-It starts with Kakure Wallet—a real browser extension, not a wallet page. The extension creates a Solana key locally, encrypts the vault, supports Devnet and Mainnet, and automatically locks. Websites receive a public address, never the private key.
+This is the real public Devnet lifecycle. A deposit enters the shielded pool. Three of five independent signers approve the internal settlement. The recipient discovers their encrypted note and withdraws the exact value.
 
-The Connect Wallet action stays visible across the product. When Kakure needs a signature, the extension opens a dedicated review window showing the requesting site and the exact kind of request. Nothing is silently signed.
+All three transactions are finalized. Three matching Groth sixteen verifier programs execute on Solana. The same run rejects a tampered root, nullifier replay, and an insufficient two-of-five quorum.
 
-This is a real wallet path. A funded Kakure Wallet reviews the recipient and amount, signs a Devnet transfer inside the extension, and produces a finalized transaction that anyone can inspect in Solana Explorer.
+Kah-koo-reh does not pretend the boundaries disappear. Deposit and withdrawal amounts remain public. Inside the pool, the chain receives commitments, ciphertext, a spent nullifier, and proof—not the plaintext asset, value, recipient, or signer graph.
 
-Inside settlement, sponsor data does real work. The Pre Stocks lane accepts only official assets and checks their Token Twenty Twenty-Two mints. If a token moves outside its permitted mark, execution stops.
+Sponsor data enforces policy. The Pre Stocks API is the only pre-IPO allowlist and supplies the mark-price mandate. Pith price freshness and confidence fail closed. A real Mee-tee-or-ah dynamic bonding curve provides a traded equity-receipt market with decreasing fees and DAMM version two graduation.
 
-The Apple stock lane uses pith market data as a hard freshness and confidence gate. Missing or stale data means no settlement—not a guessed price.
+The guided interface makes the lifecycle understandable in one minute. Underneath it are dealerless Frost custody, local and browser proving, an encrypted coordinator, recipient-only scanning, and selective audit disclosure.
 
-For an eligible position, the fund creates a private note. An encrypted proposal collects three of five frost approvals. The prover verifies ownership, authorization, and policy before the state can move.
-
-Authorized signers see the asset, amount, recipient, and approval state. The public chain sees a commitment, a spent nullifier, and proof—no ticker, no amount, no recipient, and no signer graph. A separate auditor quorum enables controlled disclosure when policy requires it.
-
-The private rail is also connected to deployed Solana programs and a real Mee-tee-or-ah bonding-curve market.
-
-Kah-koo-ray Prime gives tokenized equities private operations, threshold governance, and accountable settlement. Hide the strategy—not accountability.
+Kah-koo-reh Prime gives tokenized equities private operations without hiding accountability. Inspect every program and transaction yourself.
