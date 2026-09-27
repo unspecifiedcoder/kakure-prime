@@ -16,6 +16,7 @@ import {
 
 const METEORA_DBC_POOL = "58Hx2oENZDdiZHqsrxbZRNypMQKpt4rGbLGEXy8sTbcW";
 const METEORA_EXPLORER_URL = `https://explorer.solana.com/address/${METEORA_DBC_POOL}?cluster=devnet`;
+const PRIVATE_E2E_URL = "https://github.com/unspecifiedcoder/kakure-prime/blob/main/docs/evidence/PRIVATE_E2E.md";
 const transactionUrl = (signature: string): string => `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
 const shorten = (value: string): string => `${value.slice(0, 5)}…${value.slice(-5)}`;
 
@@ -106,6 +107,12 @@ export function DemoPage(): JSX.Element {
       </header>
 
       <section className="integration-evidence" aria-label="Live integration and protocol evidence">
+        <article data-state="pass">
+          <div><span>00 · PRIVATE E2E</span><b>9 / 9 PASS</b></div>
+          <h2>Real proof-backed settlement</h2>
+          <p>Real Groth16 deposit → 3-of-5 private transfer → recipient scan → exact withdrawal, plus stale-root, replay, and 2-of-5 rejection.</p>
+          <a href={PRIVATE_E2E_URL} target="_blank" rel="noreferrer">Reproduce the validator run ↗</a>
+        </article>
         <article data-state={preStocksGate ? preStocksGate.passed ? "pass" : "block" : "loading"}>
           <div><span>01 · PRESTOCKS</span><b>{preStocksGate ? preStocksGate.passed ? "POLICY PASS" : "POLICY BLOCK" : "VERIFYING"}</b></div>
           <h2>Official-only private equity rail</h2>
@@ -220,8 +227,9 @@ export function DemoPage(): JSX.Element {
       </section>
 
       <p className="demo-footnote">
-        Sponsor and deployment evidence is live. Only the five settlement clicks are simulated for judge accessibility. The
-        devnet verifier is test-only; the repository's reproducible local flow uses all seven real Groth16 verifiers. <Link to="/security">Read the security model</Link>.
+        Sponsor and deployment evidence is live. Only the five hosted settlement clicks are simulated for judge accessibility.
+        The linked 9/9 validator run executes the same lifecycle with seven real Groth16 verifiers; the current public Devnet
+        verifier remains test-only. <Link to="/security">Read the security model</Link>.
       </p>
     </main>
   );

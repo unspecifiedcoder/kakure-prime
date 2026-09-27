@@ -26,7 +26,7 @@
 | Stocklana submission brief | [SUBMISSION.md](./SUBMISSION.md) |
 | Build/originality disclosure | [STOCKLANA.md](./STOCKLANA.md) |
 
-The fastest judging path is: watch the pitch for a real Kakure Wallet-signed Devnet transfer and finalized Explorer evidence, then open the guided demo to inspect the PreStocks and Pyth gates and advance a clearly labeled 3-of-5 private-settlement simulation.
+The fastest judging path is: open the guided demo, inspect the **9/9 real private E2E** evidence, then use the hosted walkthrough for the product narrative. The pitch also shows a real Kakure Wallet-signed Devnet transfer and finalized Explorer evidence.
 
 ## The problem
 
@@ -44,7 +44,7 @@ Kakure Prime gives funds, DAOs, family offices, and global teams a confidential 
 
 | Surface | Status | Evidence |
 |---|---|---|
-| Noir circuits + Groth16 proving | Working on localnet | Seven circuits, native prover, verifier programs, negative tests |
+| Noir circuits + Groth16 proving | 9/9 real E2E passing | [Deposit → 3-of-5 transfer → recipient scan → withdrawal, with negative tests](./docs/evidence/PRIVATE_E2E.md) |
 | Solana shielded pool | Deployed on devnet | [Program `HPzs…sccF`](https://explorer.solana.com/address/HPzs68TncDWTHocTZv5ekvpMwDjcx4PeHLoTedwBsccF?cluster=devnet) |
 | FROST custody and encrypted coordination | Working | Dealerless DKG, threshold signing, encrypted relay |
 | Token-2022 routing | Working in code/localnet | Asset-program validation and deposit/withdraw routing |
@@ -56,7 +56,7 @@ Kakure Prime gives funds, DAOs, family offices, and global teams a confidential 
 | Kakure Wallet extension | Working | Manifest V3 provider injection, encrypted local signer, 15-minute auto-lock, Devnet/Mainnet separation, explicit transaction review, real SOL broadcast, and Explorer handoff |
 | Wallet-signed Devnet transfer | Finalized and recorded | The pitch shows the extension creating, reviewing, signing, broadcasting, and opening the transaction in Solana Explorer |
 
-The full cryptographic flow runs end to end on a local validator. The hosted walkthrough is designed for reliable judging without an 80-second proof wait or a local prover installation; it labels its simulated settlement clicks in the UI.
+The full cryptographic flow runs end to end on a local validator in about 130 seconds, including proof generation, real verifier CPI, recipient scanning, vault withdrawal, and three failure paths. The hosted walkthrough is designed for reliable judging without a local prover installation; it labels its simulated settlement clicks in the UI and links directly to the reproducible evidence.
 
 ## Sponsor integrations
 
@@ -215,6 +215,7 @@ just e2e-scenario
 
 - [ ] Deploy the seven production verifier programs to devnet and point the pool at them instead of the demo verifier.
 - [x] Execute and record a standard Kakure Wallet Devnet transfer with review, local signing, and finalized Explorer evidence.
+- [x] Execute and document the complete real private pool path locally: deposit → 3-of-5 proof-backed settlement → recipient scan → withdrawal, including replay/stale-root/insufficient-quorum rejection.
 - [ ] Execute and record the complete private pool path: deposit → proof-backed private settlement → withdrawal, with Explorer links in the UI.
 - [ ] Add GitHub Actions for workspace tests, web build, Rust tests, reproducible program binaries, and secret scanning.
 

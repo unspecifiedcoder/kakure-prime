@@ -7,6 +7,11 @@ describe("DemoPage", () => {
   it("runs the complete simulated settlement flow without a wallet or backend", () => {
     render(<MemoryRouter><DemoPage /></MemoryRouter>);
     expect(screen.getByText(/guided judge mode/i)).toBeInTheDocument();
+    expect(screen.getByText(/9 \/ 9 pass/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /reproduce the validator run/i })).toHaveAttribute(
+      "href",
+      "https://github.com/unspecifiedcoder/kakure-prime/blob/main/docs/evidence/PRIVATE_E2E.md",
+    );
     fireEvent.click(screen.getByRole("button", { name: /shield 42.50 AAPLx/i }));
     fireEvent.click(screen.getByRole("button", { name: /propose private distribution/i }));
     fireEvent.click(screen.getByRole("button", { name: /collect 3 approvals/i }));
