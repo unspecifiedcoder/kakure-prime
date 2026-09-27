@@ -5,49 +5,49 @@
       "name": "deposit",
       "circuit_id": 0,
       "public_input_count": 13,
-      "vk_sha256": "d54ea04a0d12334dd6c2eb9bbacc031f1de0af645cff2f03b17f9d80415c3e49",
+      "vk_sha256": "3fd3faebb95f3d99adb960fb3b90f1f95159652eebdf3397c135b60812e4e4ff",
       "setup": "INSECURE-DEV"
     },
     {
       "name": "transfer",
       "circuit_id": 1,
       "public_input_count": 24,
-      "vk_sha256": "bf981ab22bcb3db4281df6fb00bc622f5c186893350eed8b4ecc4680ef14519b",
+      "vk_sha256": "1152afc238184bcbcc1a2e9cc766ac84c7524155d9bbee3d66de299093bb7f60",
       "setup": "INSECURE-DEV"
     },
     {
       "name": "withdraw",
       "circuit_id": 2,
       "public_input_count": 17,
-      "vk_sha256": "ca201e9a15131a64b93785d9a52a26ea8e120d5700d89a716eb1994ced0690cd",
+      "vk_sha256": "b772bc6e40479d006430ca710a27764c7c9de17356cef5c451435068a45f5cb1",
       "setup": "INSECURE-DEV"
     },
     {
       "name": "transfer_multisig",
       "circuit_id": 3,
       "public_input_count": 24,
-      "vk_sha256": "df0720db6ea79085b292d9c91174aa5ef11c13442e9318ee1eacb8af9f241d3d",
+      "vk_sha256": "e45af05212aa26b53800035885ee194581c6454fc36d0274d7cd420229745826",
       "setup": "INSECURE-DEV"
     },
     {
       "name": "split_multisig",
       "circuit_id": 4,
       "public_input_count": 22,
-      "vk_sha256": "641263eab7d66d19dc90f4c4878f43cf4defd57e6417806c41e964086a450b22",
+      "vk_sha256": "000c69f81502f8922e8dac22998fe6324e38c62c7ce5e6e978774f4debe4b551",
       "setup": "INSECURE-DEV"
     },
     {
       "name": "join_multisig",
       "circuit_id": 5,
       "public_input_count": 14,
-      "vk_sha256": "9191db0397f7d35bd830d156d65553f4389ba1b8fdce3106043a8137164b972f",
+      "vk_sha256": "6784f235a56d41b0cc1f7733b073ac75b675e4879e2895a2ec64a2db22c6f822",
       "setup": "INSECURE-DEV"
     },
     {
       "name": "withdraw_multisig",
       "circuit_id": 6,
       "public_input_count": 17,
-      "vk_sha256": "645628396cf7c55a3730b81e8ca27be124e51be0dfacb030f7125dc0870fb77b",
+      "vk_sha256": "68f640446fc1dca3548d0d67e4e6addbe1b272ecac8c230eb409ca56f905a76f",
       "setup": "INSECURE-DEV"
     }
   ]
