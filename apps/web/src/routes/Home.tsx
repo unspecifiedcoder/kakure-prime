@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppStore } from "../store/appStore.js";
-import { connectPreferredWallet, deriveAccount } from "../lib/wallet.js";
 import { createOrJoinTreasury, decodeInvite, encodeInvite } from "../lib/treasury.js";
 import { CopyLine } from "../ui/CopyButton.js";
 import { Steps } from "../ui/Steps.js";
-import { shortAddress } from "../ui/format.js";
 import { MarketStrip } from "../ui/MarketStrip.js";
 
 const CEREMONY_STEPS = [
@@ -14,7 +12,24 @@ const CEREMONY_STEPS = [
   { id: "save", label: "Saving your share, encrypted with your passphrase" },
 ];
 
-type ConnectStatus = { kind: "idle" } | { kind: "connecting" } | { kind: "error"; message: string };
+const DEVNET_EVIDENCE = [
+  {
+    stage: "01 · DEPOSIT",
+    detail: "Groth16 verified · 608,868 CU",
+    signature: "4QSDN3RSCUm4eSANet9Qd1BSTgkptdFh8EDRBKF7yRs5w1LnJhhyrDUM2WepxbwrLmazr4Pc543FU2hANz1ec8j4",
+  },
+  {
+    stage: "02 · PRIVATE 3-OF-5",
+    detail: "FROST + Groth16 · 615,921 CU",
+    signature: "2EyosmdTjZ3c7DsgQRBHhGexfEM6JGhGxk1XFJLeAyooPkvuX8yP2iqJjJucC3DeyZqXpeKmgPEvtt13Pqjknwsg",
+  },
+  {
+    stage: "03 · WITHDRAW",
+    detail: "Exact release · 586,902 CU",
+    signature: "GFuaxgsPVUtPQiKbzb12Enoe583t1jCbXuNrFDbgiZQZKtLRKTZS4Dga3cPHq4VSBuJHiUJiqt7EHo8mf2T9S7m",
+  },
+] as const;
+
 type CeremonyStatus =
   | { kind: "idle" }
   | { kind: "running" }
@@ -28,27 +43,13 @@ type CeremonyStatus =
  */
 export function Home(): JSX.Element {
   const navigate = useNavigate();
-  const { walletPublicKey, connect, treasuries, addTreasury, settings } = useAppStore();
-
-  const [connectStatus, setConnectStatus] = useState<ConnectStatus>({ kind: "idle" });
+  const { treasuries, addTreasury, settings } = useAppStore();
   const [name, setName] = useState("");
   const [threshold, setThreshold] = useState(3);
   const [memberCount, setMemberCount] = useState(5);
   const [passphrase, setPassphrase] = useState("");
   const [inviteToken, setInviteToken] = useState("");
   const [ceremony, setCeremony] = useState<CeremonyStatus>({ kind: "idle" });
-
-  async function onConnect(): Promise<void> {
-    setConnectStatus({ kind: "connecting" });
-    try {
-      const wallet = await connectPreferredWallet();
-      const account = await deriveAccount(wallet);
-      connect(wallet.publicKey, account);
-      setConnectStatus({ kind: "idle" });
-    } catch (err) {
-      setConnectStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
-    }
-  }
 
   async function onCreate(): Promise<void> {
     setCeremony({ kind: "running" });
@@ -93,8 +94,6 @@ export function Home(): JSX.Element {
     }
   }
 
-  const connected = walletPublicKey !== null;
-
   return (
     <main>
       <div className="block hero">
@@ -117,23 +116,33 @@ export function Home(): JSX.Element {
           <a className="btn big" href="/pitch-video.html">
             Watch pitch video
           </a>
-          <a className="btn big" href="/demo-video.html">
-            Technical walkthrough
-          </a>
+          <Link className="btn big" to="/evidence">
+            Inspect Devnet proof
+          </Link>
           <Link className="btn big" to="/wallet">
             Get Kakure Wallet extension
           </Link>
-          {connected ? (
-            <p>
-              Connected: <span className="chip">{shortAddress(walletPublicKey!.toBase58())}</span>
-            </p>
-          ) : (
-            <button type="button" className="primary big" onClick={() => void onConnect()} disabled={connectStatus.kind === "connecting"}>
-              {connectStatus.kind === "connecting" ? "Connecting wallet…" : "Connect wallet"}
-            </button>
-          )}
-          {!connected && <span className="muted">Connect with the Kakure Wallet extension or Phantom.</span>}
-          {connectStatus.kind === "error" && <p role="alert">{connectStatus.message}</p>}
+          <span className="muted">Wallet connection remains available in the persistent header.</span>
+        </section>
+        <section className="devnet-proof-rail" aria-label="Finalized public Devnet proof">
+          <div className="devnet-proof-heading">
+            <span>PUBLIC DEVNET · 9 / 9 PASS</span>
+            <strong>One real private lifecycle. Independently inspectable.</strong>
+          </div>
+          <div className="devnet-proof-links">
+            {DEVNET_EVIDENCE.map((evidence) => (
+              <a
+                href={`https://explorer.solana.com/tx/${evidence.signature}?cluster=devnet`}
+                target="_blank"
+                rel="noreferrer"
+                key={evidence.stage}
+              >
+                <b>{evidence.stage}</b>
+                <span>{evidence.detail}</span>
+                <small>{evidence.signature.slice(0, 6)}…{evidence.signature.slice(-6)} ↗</small>
+              </a>
+            ))}
+          </div>
         </section>
       </div>
 

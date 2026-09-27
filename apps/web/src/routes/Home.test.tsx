@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { PublicKey } from "@solana/web3.js";
-import { SolanaAccount } from "@kakure/sdk";
-import * as walletLib from "../lib/wallet.js";
 import * as treasuryLib from "../lib/treasury.js";
 import { useAppStore } from "../store/appStore.js";
 import { Home } from "./Home.js";
@@ -22,30 +19,24 @@ beforeEach(() => {
 });
 
 describe("Home (spec §1.1: connect, create/join a private treasury)", () => {
-  it("shows a connect button when no wallet is connected, and no treasuries yet", () => {
+  it("shows the empty private-portfolio state", () => {
     renderHome();
-    expect(screen.getByRole("button", { name: /connect wallet/i })).toBeInTheDocument();
     expect(screen.getByText(/no private portfolios yet/i)).toBeInTheDocument();
   });
 
-  it("links both submission videos from the hero", () => {
+  it("links the pitch and finalized evidence from the hero", () => {
     renderHome();
     expect(screen.getByRole("link", { name: /watch pitch video/i })).toHaveAttribute("href", "/pitch-video.html");
-    expect(screen.getByRole("link", { name: /technical walkthrough/i })).toHaveAttribute("href", "/demo-video.html");
+    expect(screen.getByRole("link", { name: /inspect devnet proof/i })).toHaveAttribute("href", "/evidence");
   });
 
-  it("connecting derives the account and shows the wallet address instead of the connect button", async () => {
-    const account = await SolanaAccount.fromSeed("home-test-seed");
-    vi.spyOn(walletLib, "connectPreferredWallet").mockResolvedValue({
-      publicKey: PublicKey.default,
-      signMessage: vi.fn(),
-      signTransaction: vi.fn(),
-    });
-    vi.spyOn(walletLib, "deriveAccount").mockResolvedValue(account);
-
+  it("puts the finalized private Devnet lifecycle above the fold", () => {
     renderHome();
-    screen.getByRole("button", { name: /connect wallet/i }).click();
-    await waitFor(() => expect(screen.getByText(/connected:/i)).toBeInTheDocument());
+    expect(screen.getByText(/public devnet · 9 \/ 9 pass/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /private 3-of-5/i })).toHaveAttribute(
+      "href",
+      expect.stringContaining("2EyosmdTjZ3c7DsgQRBHhGexfEM6JGhGxk1XFJLeAyooPkvuX8yP2iqJjJucC3DeyZqXpeKmgPEvtt13Pqjknwsg"),
+    );
   });
 
   it("creating a treasury runs the ceremony and shows an invite link on success", async () => {

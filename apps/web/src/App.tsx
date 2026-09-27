@@ -11,6 +11,7 @@ const AuditPage = lazy(() => import("./routes/AuditPage.js").then((module) => ({
 const SecurityPage = lazy(() => import("./routes/SecurityPage.js").then((module) => ({ default: module.SecurityPage })));
 const DemoPage = lazy(() => import("./routes/DemoPage.js").then((module) => ({ default: module.DemoPage })));
 const ExtensionPage = lazy(() => import("./routes/ExtensionPage.js").then((module) => ({ default: module.ExtensionPage })));
+const EvidencePage = lazy(() => import("./routes/EvidencePage.js").then((module) => ({ default: module.EvidencePage })));
 
 /** Which cluster the app is pointed at, read off the RPC URL. A finance lead must never mistake a
  *  devnet demo for real money, so this is always on screen. */
@@ -51,6 +52,7 @@ function TopBar(): JSX.Element {
         <NavLink to="/audit">Audit room</NavLink>
         <NavLink to="/demo">Judge demo</NavLink>
         <NavLink to="/wallet">Get extension</NavLink>
+        <NavLink to="/evidence">Devnet proof</NavLink>
         <NavLink to="/security">Security</NavLink>
       </nav>
       <span className="spacer" />
@@ -87,6 +89,7 @@ export function App(): JSX.Element {
               <Route path="/audit" element={<AuditPage />} />
               <Route path="/demo" element={<DemoPage />} />
               <Route path="/wallet" element={<ExtensionPage />} />
+              <Route path="/evidence" element={<EvidencePage />} />
               <Route path="/security" element={<SecurityPage />} />
             </Routes>
           </Suspense>

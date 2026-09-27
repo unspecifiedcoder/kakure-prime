@@ -155,7 +155,7 @@ export function DemoPage(): JSX.Element {
             <label htmlFor="demo-lane">Settlement policy lane</label>
             <select id="demo-lane" value={lane} onChange={(event) => { setLane(event.target.value as "prestocks" | "aaplx"); setStep(0); }}>
               <option value="prestocks">PreStocks · official-only NAV guard</option>
-              <option value="aaplx">AAPLx · Pyth live market-risk gate</option>
+              <option value="aaplx">Pyth · live cross-market risk gate</option>
             </select>
             {lane === "prestocks" && <>
               <label htmlFor="demo-asset">Official PreStocks asset</label>
