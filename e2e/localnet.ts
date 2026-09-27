@@ -1,6 +1,6 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
-import { mkdtempSync, existsSync } from "node:fs";
+import { mkdtempSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -102,6 +102,96 @@ export interface Localnet {
     readonly verifiers: Record<string, PublicKey>;
   };
   stop(): Promise<void>;
+}
+
+/**
+ * Connects the real scenario to an already-deployed Devnet pool while keeping the replaceable
+ * indexer and coordinator local. Secrets and provider URLs are supplied only through environment
+ * variables; nothing sensitive is written to the repository.
+ */
+export async function startRemoteDevnet(opts: LocalnetOptions = {}): Promise<Localnet> {
+  const rpcUrl = process.env.KAKURE_DEVNET_RPC;
+  const payerPath = process.env.KAKURE_PAYER_KEYPAIR;
+  const poolProgram = process.env.KAKURE_POOL_PROGRAM;
+  const depositVerifier = process.env.KAKURE_DEPOSIT_VERIFIER;
+  const transferMultisigVerifier = process.env.KAKURE_TRANSFER_MULTISIG_VERIFIER;
+  const withdrawVerifier = process.env.KAKURE_WITHDRAW_VERIFIER;
+  if (!rpcUrl || !payerPath || !poolProgram || !depositVerifier || !transferMultisigVerifier || !withdrawVerifier) {
+    throw new Error("startRemoteDevnet: missing KAKURE_DEVNET_RPC, payer, pool, or verifier environment variable");
+  }
+
+  const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(readFileSync(payerPath, "utf8")) as number[]));
+  const connection = new Connection(rpcUrl, {
+    commitment: "confirmed",
+    wsEndpoint: process.env.KAKURE_DEVNET_WS ?? "wss://api.devnet.solana.com/",
+  });
+  const mint = await createMint(connection, payer, payer.publicKey, null, opts.mintDecimals ?? 6);
+  const payerAta = await getOrCreateAssociatedTokenAccount(connection, payer, mint, payer.publicKey);
+  await mintTo(connection, payer, mint, payerAta.address, payer, opts.mintAmount ?? 1_000_000_000n);
+
+  const deposit = new PublicKey(depositVerifier);
+  const transferMultisig = new PublicKey(transferMultisigVerifier);
+  const withdraw = new PublicKey(withdrawVerifier);
+  const verifiers: Record<string, PublicKey> = {
+    deposit,
+    transfer: transferMultisig,
+    withdraw,
+    transfer_multisig: transferMultisig,
+    split_multisig: transferMultisig,
+    join_multisig: transferMultisig,
+    withdraw_multisig: withdraw,
+  };
+  const kakurePool = new PublicKey(poolProgram);
+
+  const indexerPort = await findFreePort();
+  const coordinatorPort = await findFreePort();
+  const indexerUrl = `http://127.0.0.1:${indexerPort}`;
+  const coordinatorUrl = `http://127.0.0.1:${coordinatorPort}`;
+  const logToConsole = opts.logToConsole ?? false;
+  const indexerCliPath = opts.indexerCliPath ?? join(REPO_ROOT, "packages", "indexer", "dist", "cli.js");
+  const indexerIdlPath =
+    opts.indexerIdlPath ?? join(REPO_ROOT, "e2e", "fixtures", "kakure_pool.indexer-idl.json");
+  // The public endpoint is used only for the indexer's light historical scan/live subscription;
+  // transaction submission and account reads remain on the dedicated provider RPC.
+  const indexerRpc = process.env.KAKURE_INDEXER_RPC ?? "https://api.devnet.solana.com";
+  const indexer = spawnLogged(
+    "indexer",
+    "node",
+    [indexerCliPath, "--port", String(indexerPort), "--rpc", indexerRpc, "--program-id", kakurePool.toBase58(), "--idl", indexerIdlPath, "--db", ":memory:"],
+    { logToConsole },
+  );
+  const coordinatorCliPath =
+    opts.coordinatorCliPath ?? join(REPO_ROOT, "packages", "coordinator", "dist", "cli.js");
+  const coordinator = spawnLogged(
+    "coordinator",
+    "node",
+    [coordinatorCliPath, "--port", String(coordinatorPort), "--db", ":memory:"],
+    { logToConsole },
+  );
+
+  await waitForHttp(`${indexerUrl}/root`, 30_000);
+  await waitForHttp(`${coordinatorUrl}/sessions/${"0".repeat(64)}/messages?since=0`, 30_000);
+  let stopped = false;
+  const stop = async (): Promise<void> => {
+    if (stopped) return;
+    stopped = true;
+    indexer.kill("SIGTERM");
+    coordinator.kill("SIGTERM");
+    await new Promise((resolveStop) => setTimeout(resolveStop, 200));
+  };
+
+  return {
+    rpcUrl,
+    rpcPort: 0,
+    indexerUrl,
+    coordinatorUrl,
+    connection,
+    payer,
+    mint,
+    payerTokenAccount: payerAta.address,
+    programIds: { kakurePool, mockVerifier: deposit, verifiers },
+    stop,
+  };
 }
 
 async function findFreePort(): Promise<number> {

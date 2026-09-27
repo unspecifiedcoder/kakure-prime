@@ -82,7 +82,7 @@ import {
   deriveSessionKeyFromGvsDecimal,
   type DkgCeremonyResult,
 } from "@kakure/cli";
-import { startLocalnet, REPO_ROOT, type Localnet } from "./localnet.js";
+import { startLocalnet, startRemoteDevnet, REPO_ROOT, type Localnet } from "./localnet.js";
 import { join } from "node:path";
 
 // FIXTURE_COMPLIANCE_{X,Y} from circuits/shared/src/common/test_fixtures.nr -- every circuit's
@@ -151,6 +151,14 @@ async function retryOnTransientWitnessMismatch<T>(fn: () => Promise<T>, attempts
     }
   }
   throw new Error("unreachable");
+}
+
+async function syncRemoteIndexer(net: Localnet): Promise<void> {
+  if (process.env.KAKURE_REMOTE_DEVNET !== "1") return;
+  const response = await fetch(`${net.indexerUrl}/sync`, { method: "POST" });
+  if (!response.ok) {
+    throw new Error(`remote indexer sync failed (${response.status}): ${await response.text()}`);
+  }
 }
 
 /**
@@ -227,7 +235,9 @@ describe("§7 scenario: DKG -> deposit -> 3-of-5 transfer -> withdraw (real loca
   const s: Partial<SharedState> = {};
 
   beforeAll(async () => {
-    const net = await startLocalnet({ logToConsole: false });
+    const net = process.env.KAKURE_REMOTE_DEVNET === "1"
+      ? await startRemoteDevnet({ logToConsole: true })
+      : await startLocalnet({ logToConsole: false });
     s.net = net;
     s.proverArtifactsDir = join(REPO_ROOT, "circuits", "target");
     s.poolAddress = poolPda(net.programIds.kakurePool)[0];
@@ -262,9 +272,19 @@ describe("§7 scenario: DKG -> deposit -> 3-of-5 transfer -> withdraw (real loca
   });
 
   it(
-    "step 1: initialize the pool with all 7 real verifiers, the fixture compliance key, and the cluster's genesis leaf",
+    "step 1: initialize or validate the pool's real verifier routing, compliance key, and genesis leaf",
     async () => {
       const net = s.net!;
+      if (process.env.KAKURE_REMOTE_DEVNET === "1") {
+        const acct = await net.connection.getAccountInfo(s.poolAddress!, "confirmed");
+        expect(acct).not.toBeNull();
+        const pool = decodePool(acct!.data);
+        expect(pool.authority.equals(net.payer.publicKey)).toBe(true);
+        expect(pool.verifiers[0]!.equals(net.programIds.verifiers.deposit!)).toBe(true);
+        expect(pool.verifiers[2]!.equals(net.programIds.verifiers.withdraw!)).toBe(true);
+        expect(pool.verifiers[3]!.equals(net.programIds.verifiers.transfer_multisig!)).toBe(true);
+        return;
+      }
       const genesisHashStr = await net.connection.getGenesisHash();
       const genesisHashBig = bytesToBigIntBE(new PublicKey(genesisHashStr).toBytes());
       // genesisLeaf now reduces genesisHash internally (packages/sdk/src/merkle/genesis.ts) --
@@ -437,6 +457,7 @@ describe("§7 scenario: DKG -> deposit -> 3-of-5 transfer -> withdraw (real loca
       // Poll briefly: the indexer's live tail may lag the confirmed tx by a beat.
       let found: MultisigNoteView[] = [];
       for (let attempt = 0; attempt < 20; attempt++) {
+        await syncRemoteIndexer(net);
         found = await engine.sync(0);
         if (found.length > 0) break;
         await new Promise((r) => setTimeout(r, 500));
@@ -586,6 +607,7 @@ describe("§7 scenario: DKG -> deposit -> 3-of-5 transfer -> withdraw (real loca
       ]);
       let notes: ReturnType<typeof utxoRepo.getAllNotes> = [];
       for (let attempt = 0; attempt < 20; attempt++) {
+        await syncRemoteIndexer(net);
         await engine.sync(0);
         notes = utxoRepo.getUnspentNotes();
         if (notes.length > 0) break;

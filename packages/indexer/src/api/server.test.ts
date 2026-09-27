@@ -23,6 +23,18 @@ class TruncatedLogChainSource implements ChainSource {
   }
 }
 
+class EmptyChainSource implements ChainSource {
+  async getSignaturesForAddress(): Promise<SignatureInfo[]> {
+    return [];
+  }
+  async getTransaction(): Promise<RawTransaction | null> {
+    return null;
+  }
+  onLogs(): () => void {
+    return () => {};
+  }
+}
+
 describe("indexer HTTP API (I-8)", () => {
   let store: IndexerStore;
   let tree: LeanIMT;
@@ -158,6 +170,27 @@ describe("indexer HTTP API (I-8)", () => {
       { version: 0, x: "0xa", y: "0xb", from_slot: 1 },
       { version: 1, x: "0xc", y: "0xd", from_slot: 2 },
     ]);
+  });
+
+  it("POST /sync reports when no ingestor is configured", async () => {
+    const res = await app.inject({ method: "POST", url: "/sync" });
+    expect(res.statusCode).toBe(501);
+    expect(res.json()).toEqual({ error: "ingestor unavailable" });
+  });
+
+  it("POST /sync runs an idempotent chain backfill", async () => {
+    const ingestor = new Ingestor({
+      chain: new EmptyChainSource(),
+      store,
+      tree,
+      idl: DEFAULT_KAKURE_POOL_IDL,
+      programId: PROGRAM_ID,
+    });
+    const syncApp = buildIndexerApi({ store, tree, ingestor });
+    const res = await syncApp.inject({ method: "POST", url: "/sync" });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ synced: true, next_leaf_index: 0 });
+    await syncApp.close();
   });
 
   // slice-2 F-4: once the ingestor has observed a truncated log, its leaf mirror can no longer be

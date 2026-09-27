@@ -1,0 +1,56 @@
+{
+  "cluster": "devnet",
+  "status": "minimum-private-path",
+  "deployedAt": "2026-09-27",
+  "payer": "Dt3NcAkrUhhLSjQ6TL17t58djpyfayKdgBy9xd1wjVDY",
+  "poolProgram": {
+    "address": "CTBujgpdNFHAYg9WGDWjgGa68AxYuT1TKQBkRYnv6cBf",
+    "deploymentSignature": "57G66BzrA4UgkehfUArBT8fnvN4HUEDUS1wYKSwopFvK1bM9wzG3skPZcYdVdtNHzskbSKTVm5LFLzyRUusTVRDp",
+    "poolState": "3jA1tdgYoNq3sR13Gmp6eePBKDzeC741gRdR9xe6sAYb",
+    "initializationSignature": "5vPthXRgfP9R3mvffKxbR12kcL9qCHviqJRxYVuBbbdXtViK4Sq5UQtiUDC28jZN3Q5MvTBBFnpeWdBgNZFzMxBU"
+  },
+  "verifiers": {
+    "deposit": {
+      "circuitId": 0,
+      "address": "21sN3juRFvjxBokrkB2tNisFpiRnpXTq42XrzbJ3XtxM",
+      "deploymentSignature": "5G9rm8bVMZ7CgpubLCZcLdhH8xUuuZGvdqa7X64MpMqNX89SduvzwDUUja7FPioBntpoFeNYPwJpE7nJz3CXhzJq"
+    },
+    "withdraw": {
+      "circuitId": 2,
+      "address": "25pR3qcZynCSUxx7atAwahaCih6GeNzEt923YksuPMg4",
+      "deploymentSignature": "5nMq5RTg4WLf81QMYDqm9uhRvKS2ZiSriWA9HHTjVsHwnwKJgdLRWizAiZ1bciSuRY1VVx7CgZoH2xVssSiJ7Ju1"
+    },
+    "transferMultisig": {
+      "circuitId": 3,
+      "address": "CNoKnfajTr8XQXs4D84cy89C993KSn4bs5tXZ9Xmofwb",
+      "deploymentSignature": "3j1jN6k5bNsA2Y8VFZ35Wdg8Va4yyT9UJ4AZ39WiEV1AXYKxHrXus6k7j2Ac4Nafs8fHdskzLRtPRqS7xgcYtGDj"
+    }
+  },
+  "evidence": {
+    "runDate": "2026-09-27",
+    "status": "9/9 passed",
+    "deposit": {
+      "signature": "4QSDN3RSCUm4eSANet9Qd1BSTgkptdFh8EDRBKF7yRs5w1LnJhhyrDUM2WepxbwrLmazr4Pc543FU2hANz1ec8j4",
+      "proofSeconds": 1.527,
+      "transactionBytes": 822,
+      "computeUnits": 608868
+    },
+    "transferMultisig": {
+      "signature": "2EyosmdTjZ3c7DsgQRBHhGexfEM6JGhGxk1XFJLeAyooPkvuX8yP2iqJjJucC3DeyZqXpeKmgPEvtt13Pqjknwsg",
+      "proofAndSubmitSeconds": 7.765,
+      "transactionBytes": 1125,
+      "computeUnits": 615921
+    },
+    "withdraw": {
+      "signature": "GFuaxgsPVUtPQiKbzb12Enoe583t1jCbXuNrFDbgiZQZKtLRKTZS4Dga3cPHq4VSBuJHiUJiqt7EHo8mf2T9S7m",
+      "proofSeconds": 2.329,
+      "transactionBytes": 919,
+      "computeUnits": 586902
+    }
+  },
+  "limitations": [
+    "Only circuit IDs 0, 2, and 3 are backed by their matching real verifier on this deployment.",
+    "The proving parameters are INSECURE-DEV and the software is unaudited.",
+    "Do not use this deployment with material assets."
+  ]
+}

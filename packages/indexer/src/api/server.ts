@@ -45,6 +45,7 @@ export function buildIndexerApi(opts: IndexerApiOptions): FastifyInstance {
   // CORS: the indexer is a read-only public API; origin is configurable (default any) for browser clients.
   void app.register(cors, { origin: opts.corsOrigin ?? true, methods: ["GET","POST","OPTIONS"] });
   const { store, tree, ingestor } = opts;
+  let syncInFlight: Promise<void> | null = null;
 
   /** slice-2 F-4: refuse to serve mirror-derived reads once a truncated log has been observed. */
   function haltedReply(reply: { status: (code: number) => { send: (body: unknown) => unknown } }): unknown {
@@ -76,6 +77,27 @@ export function buildIndexerApi(opts: IndexerApiOptions): FastifyInstance {
       roots,
       root_cursor: rootCursor,
     };
+  });
+
+  /**
+   * Explicit catch-up hook for RPC providers/environments where WebSocket subscriptions are not
+   * available. Backfill is cursor-based and idempotent, and concurrent callers share one run.
+   */
+  app.post("/sync", async (_req, reply) => {
+    if (!ingestor) return reply.status(501).send({ error: "ingestor unavailable" });
+    if (!syncInFlight) {
+      syncInFlight = ingestor.backfill().finally(() => {
+        syncInFlight = null;
+      });
+    }
+    try {
+      await syncInFlight;
+      return { synced: true, next_leaf_index: tree.nextLeafIndex };
+    } catch (error) {
+      return reply.status(503).send({
+        error: error instanceof Error ? error.message : "indexer synchronization failed",
+      });
+    }
   });
 
   app.get<{ Params: { leaf_index: string } }>("/path/:leaf_index", async (req, reply) => {

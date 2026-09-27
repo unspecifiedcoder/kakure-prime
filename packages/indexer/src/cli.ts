@@ -18,7 +18,11 @@ async function main(): Promise<void> {
   const ingestor = new Ingestor({ chain, store, tree, idl, programId: config.programId });
 
   ingestor.hydrateTree();
-  const stopLiveTail = ingestor.startLiveTail();
+  // Some HTTP-only RPC plans deliberately do not expose WebSocket subscriptions. In that mode
+  // operators call POST /sync (cursor-based, idempotent backfill) after confirmed transactions.
+  const stopLiveTail = process.env.KAKURE_INDEXER_DISABLE_LIVE === "1"
+    ? () => undefined
+    : ingestor.startLiveTail();
 
   const app = buildIndexerApi({ store, tree, ingestor });
   await app.listen({ port: config.port, host: config.host });
